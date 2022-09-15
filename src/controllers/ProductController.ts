@@ -1,7 +1,8 @@
 import express from 'express';
 import {Product} from '../entities';
 import {Dependable} from '../entities/protocols';
-import {MiddlewareFuncAsync, Response, ResponseStatusCode} from '../entities/networking';
+import {MiddlewareFuncAsync, ResponseStatusCode} from '../entities/networking';
+import {generateOKResponse, generateRequestError, generateServerError} from './helper-functions';
 
 const ProductController = (dependencies: Dependable<Product>): {
     addProduct: MiddlewareFuncAsync,
@@ -33,11 +34,7 @@ const ProductController = (dependencies: Dependable<Product>): {
 
             const addedProduct = await useCase.add(dependencies).execute({id,name,description,price});
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: addedProduct
-            };
-            response.json(json);
+            response.json(generateOKResponse(addedProduct));
         } catch (error) {
             next(error);
         }
@@ -65,12 +62,9 @@ const ProductController = (dependencies: Dependable<Product>): {
             } = request.body as Product;
 
             const updatedProduct = await useCase.update(dependencies).execute({id,name,description,price});
+            if (!updatedProduct) throw generateServerError('updating product');
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: updatedProduct
-            };
-            response.json(json);
+            response.json(generateOKResponse(updatedProduct));
         } catch (error) {
             next(error);
         }
@@ -98,12 +92,9 @@ const ProductController = (dependencies: Dependable<Product>): {
             } = request.body as Product;
 
             const deletedProduct = await useCase.delete(dependencies).execute({id,name,description,price});
+            if (!deletedProduct) throw generateServerError('deleting product');
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: deletedProduct
-            };
-            response.json(json);
+            response.json(generateOKResponse(deletedProduct));
         } catch (error) {
             next(error);
         }
@@ -126,21 +117,9 @@ const ProductController = (dependencies: Dependable<Product>): {
             const id = request.params.id as string;
 
             const returnedProduct = await useCase.getById(dependencies).execute(id);
-            if (!returnedProduct) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.NotFound,
-                    message: 'Error getting product',
-                    reason: `No product with id ${id}`
-                };
-                next(rejection);
-                return;
-            }
+            if (!returnedProduct) throw generateRequestError('No product with such id', ResponseStatusCode.BadRequest);
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: returnedProduct
-            };
-            response.json(json);
+            response.json(generateOKResponse(returnedProduct));
         } catch (error) {
             next(error);
         }
@@ -160,15 +139,13 @@ const ProductController = (dependencies: Dependable<Product>): {
         }
 
         try {
-            // TODO: check user access credentials
-
             const returnedProducts = await useCase.getAll(dependencies).execute();
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: returnedProducts
-            };
-            response.json(json);
+            response.json(generateOKResponse(
+                returnedProducts.length ?
+                returnedProducts :
+                'No products to show'
+            ));
         } catch (error) {
             next(error);
         }

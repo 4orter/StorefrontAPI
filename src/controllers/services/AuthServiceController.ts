@@ -1,26 +1,9 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
-import vars from '../../config/vars';
 import {User} from '../../entities';
 import {MiddlewareFuncAsync, Response, ResponseStatusCode, TokenType} from '../../entities/networking';
 import {Dependable} from '../../entities/protocols';
+import {checkToken, generateOKResponse, generateRequestError, generateServerError, generateToken} from '../helper-functions';
 
-const generateToken = (type: TokenType, payload: User): string => {
-    const secret = type === TokenType.Access ? vars.accessSecret : vars.refreshSecret;
-    const expiration = type === TokenType.Access ? '1h' : '30d';
-
-    return jwt.sign({...payload}, secret, {expiresIn: expiration});
-};
-
-const checkToken = (type: TokenType, token: string): jwt.JwtPayload | string | null => {
-    const secret = type === TokenType.Access ? vars.accessSecret : vars.refreshSecret;
-    try {
-        const decoded: jwt.JwtPayload | string = jwt.verify(token, secret);
-        return decoded;
-    } catch (_) {
-        return null;
-    }
-};
 
 const AuthServiceController = (dependencies: Dependable<User>): {
     signUp: MiddlewareFuncAsync,
@@ -45,24 +28,14 @@ const AuthServiceController = (dependencies: Dependable<User>): {
             const user = checkToken(TokenType.Refresh, sessionToken) as User;
             if (user) {
                 try {
-                    if (!useCase.getSessionByUserId) throw new Error();
-                    const session = await useCase.getSessionByUserId(dependencies).execute((user.id as string));
+                    if (!useCase.getSessionForUser) throw new Error();
+                    const session = await useCase.getSessionForUser(dependencies).execute((user.id as string));
                     if (session) {
-                        const rejection: Response = {
-                            status: ResponseStatusCode.Unauthorized,
-                            message: 'Error signing up',
-                            reason: 'You are already signed in. Please sign out before taking this action'
-                        };
-                        next(rejection);
+                        next(generateRequestError('You are already signed in. Please sign out before taking this action', ResponseStatusCode.BadRequest));
                         return;
                     }
                 } catch (error) {
-                    const rejection: Response = {
-                        status: ResponseStatusCode.Unauthorized,
-                        message: 'Error signing up',
-                        reason: 'Unknown Server Error'
-                    };
-                    next(rejection);
+                    next(generateServerError('signing up'));
                     return;
                 }
             }
@@ -76,43 +49,29 @@ const AuthServiceController = (dependencies: Dependable<User>): {
                 lastName,
             } = request.body;
 
-            if (!useCase.getByUsername) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: 'Error with user sign up',
-                    reason: 'Internal Server Error'
-                };
-                next(rejection);
-                return;
-            }
+            if (!useCase.getUserByUsername)  throw generateServerError('signing up');
 
-            const optionalUser = await useCase.getByUsername(dependencies).execute(username);
-
-            if (optionalUser) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Error with user sign up',
-                    reason: 'Username is already taken'
-                };
-                next(rejection);
-                return;
-            }
+            const possibleUser = await useCase.getUserByUsername(dependencies).execute(username);
+            if (possibleUser) throw generateRequestError('Username is already taken', ResponseStatusCode.BadRequest);
 
             const addedUser = await useCase.add(dependencies).execute({username,password,firstName,lastName,level:0}) as User;
+            if (!useCase.addSession) throw generateServerError('signing up');
 
-            if (!(addedUser && useCase.addSession)) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: 'Error with user sign up',
-                    reason: 'Unknown Server Error',
-                };
-                next(rejection);
-                return;
-            }
-
-            const accessToken = generateToken(TokenType.Access, addedUser);
-            const refreshToken = generateToken(TokenType.Refresh, addedUser);
-            await useCase.addSession(dependencies).execute({secret:refreshToken,userId:(addedUser.id as string)});
+            const accessToken = generateToken(TokenType.Access, {
+                id:addedUser.id,
+                username:addedUser.username,
+                firstName:addedUser.firstName,
+                lastName:addedUser.lastName,
+                level:addedUser.level
+            });
+            const refreshToken = generateToken(TokenType.Refresh, {
+                id:addedUser.id,
+                username:addedUser.username,
+                firstName:addedUser.firstName,
+                lastName:addedUser.lastName,
+                level:addedUser.level
+            });
+            await useCase.addSession(dependencies).execute(refreshToken,(addedUser.id as string));
 
             // NOTE: - In a production environment, we'd want to add the "secure" and "sameSite" flags
             response.cookie(TokenType.Access, accessToken, {
@@ -124,11 +83,7 @@ const AuthServiceController = (dependencies: Dependable<User>): {
                 httpOnly: true
             });
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: `Welcome ${addedUser.username}! You are now signed up.`
-            };
-            response.json(json);
+            response.json(generateOKResponse(`Welcome ${addedUser.username}! You are now signed up.`));
         } catch (error) {
             next(error);
         }
@@ -152,24 +107,14 @@ const AuthServiceController = (dependencies: Dependable<User>): {
             const user = checkToken(TokenType.Refresh, sessionToken) as User;
             if (user) {
                 try {
-                    if (!useCase.getSessionByUserId) throw new Error();
-                    const session = await useCase.getSessionByUserId(dependencies).execute((user.id as string));
+                    if (!useCase.getSessionForUser) throw new Error();
+                    const session = await useCase.getSessionForUser(dependencies).execute((user.id as string));
                     if (session) {
-                        const rejection: Response = {
-                            status: ResponseStatusCode.Unauthorized,
-                            message: 'Error signing in',
-                            reason: 'You are already signed in. Please sign out before taking this action'
-                        };
-                        next(rejection);
+                        next(generateRequestError('You are already signed in. Please sign out before taking this action', ResponseStatusCode.BadRequest));
                         return;
                     }
                 } catch (error) {
-                    const rejection: Response = {
-                        status: ResponseStatusCode.Unauthorized,
-                        message: 'Error signing in',
-                        reason: 'Unknown Server Error'
-                    };
-                    next(rejection);
+                    next(generateServerError('signing in'));
                     return;
                 }
             }
@@ -183,25 +128,29 @@ const AuthServiceController = (dependencies: Dependable<User>): {
 
             if (!useCase.authenticate) throw new Error('Internal Server Error');
             const signedInUser = await useCase.authenticate(dependencies).execute(username,password);
-            if (!(signedInUser)) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.Unauthorized,
-                    message: 'Error signing in user',
-                    reason: 'Invalid username or password',
-                };
-                next(rejection);
-                return;
-            }
+            if (!signedInUser) throw generateRequestError('Invalid username or password', ResponseStatusCode.BadRequest);
 
-            if (!(useCase.getSessionByUserId && useCase.addSession && useCase.deleteSession)) throw new Error('Internal Server Error');
+            if (!(useCase.getSessionForUser && useCase.addSession && useCase.deleteSession)) throw generateServerError('signing in');
+
             // Check if user already has session (e.g., User clears cookies but doesn't directly sign out)
-            const session = await useCase.getSessionByUserId(dependencies).execute((signedInUser.id as string));
-            if (session) await useCase.deleteSession(dependencies).execute(session);
+            const session = await useCase.getSessionForUser(dependencies).execute((signedInUser.id as string));
+            if (session) await useCase.deleteSession(dependencies).execute(session.secret,session.userId);
 
-            const accessToken = generateToken(TokenType.Access, signedInUser);
-            const refreshToken = generateToken(TokenType.Refresh, signedInUser);
-
-            await useCase.addSession(dependencies).execute({secret: refreshToken, userId: (signedInUser.id as string)});
+            const accessToken = generateToken(TokenType.Access, {
+                id:signedInUser.id,
+                username:signedInUser.username,
+                firstName:signedInUser.firstName,
+                lastName:signedInUser.lastName,
+                level:signedInUser.level
+            });
+            const refreshToken = generateToken(TokenType.Refresh, {
+                id:signedInUser.id,
+                username:signedInUser.username,
+                firstName:signedInUser.firstName,
+                lastName:signedInUser.lastName,
+                level:signedInUser.level
+            });
+            await useCase.addSession(dependencies).execute(refreshToken,(signedInUser.id as string));
 
             // NOTE: - In a production environment, we'd want to add the "secure" and "sameSite" flags
             response.cookie(TokenType.Access, accessToken, {
@@ -213,12 +162,7 @@ const AuthServiceController = (dependencies: Dependable<User>): {
                 httpOnly: true
             });
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: `Welcome ${signedInUser.username}! You are signed in.`
-            };
-            response.status(ResponseStatusCode.OK);
-            response.json(json);
+            response.json(generateOKResponse(`Welcome ${signedInUser.username}! You are signed in.`));
         } catch (error) {
             next(error);
         }
@@ -247,16 +191,12 @@ const AuthServiceController = (dependencies: Dependable<User>): {
         }
 
         try {
-            if (!useCase.deleteSession) throw new Error('Internal Server Error');
-            await useCase.deleteSession(dependencies).execute({secret:refreshToken,userId:(user.id as string)});
+            if (!useCase.deleteSession) throw generateServerError('signing out');
+            await useCase.deleteSession(dependencies).execute(refreshToken,(user.id as string));
             response.clearCookie(TokenType.Access);
             response.clearCookie(TokenType.Refresh);
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: `You have successfully signed out! See you soon ${user.username}!`
-            };
-            response.json(json);
+            response.json(generateOKResponse(`You have successfully signed out! See you soon ${user.username}!`));
         } catch (error) {
             next(error);
         }

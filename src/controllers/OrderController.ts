@@ -1,7 +1,8 @@
 import express from 'express';
 import {Order} from '../entities';
 import {Dependable} from '../entities/protocols';
-import {MiddlewareFuncAsync, Response, ResponseStatusCode} from '../entities/networking';
+import {MiddlewareFuncAsync, ResponseStatusCode} from '../entities/networking';
+import {generateOKResponse, generateRequestError, generateServerError} from './helper-functions';
 
 const OrderController = (dependencies: Dependable<Order>): {
     addOrder: MiddlewareFuncAsync,
@@ -32,11 +33,7 @@ const OrderController = (dependencies: Dependable<Order>): {
 
             const addedOrder = await useCase.add(dependencies).execute({id,status,userId});
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: addedOrder
-            };
-            response.json(json);
+            response.json(generateOKResponse(addedOrder));
         } catch (error) {
             next(error);
         }
@@ -63,12 +60,9 @@ const OrderController = (dependencies: Dependable<Order>): {
             } = request.body as Order;
 
             const updatedOrder = await useCase.update(dependencies).execute({id,status,userId});
+            if (!updatedOrder) throw generateServerError('updating order');
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: updatedOrder
-            };
-            response.json(json);
+            response.json(generateOKResponse(updatedOrder));
         } catch (error) {
             next(error);
         }
@@ -95,12 +89,9 @@ const OrderController = (dependencies: Dependable<Order>): {
             } = request.body as Order;
 
             const deletedOrder = await useCase.delete(dependencies).execute({id,status,userId});
+            if (!deletedOrder) throw generateServerError('deleting order');
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: deletedOrder
-            };
-            response.json(json);
+            response.json(generateOKResponse(deletedOrder));
         } catch (error) {
             next(error);
         }
@@ -123,21 +114,9 @@ const OrderController = (dependencies: Dependable<Order>): {
             const id = request.params.id as string;
 
             const returnedOrder = await useCase.getById(dependencies).execute(id);
-            if (!returnedOrder) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.NotFound,
-                    message: 'Error getting order',
-                    reason: `No order with id ${id}`
-                };
-                next(rejection);
-                return;
-            }
+            if (!returnedOrder) throw generateRequestError('No order with such id', ResponseStatusCode.BadRequest);
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: returnedOrder
-            };
-            response.json(json);
+            response.json(generateOKResponse(returnedOrder));
         } catch (error) {
             next(error);
         }
@@ -157,15 +136,13 @@ const OrderController = (dependencies: Dependable<Order>): {
         }
 
         try {
-            // TODO: check user access credentials
-
             const returnedOrders = await useCase.getAll(dependencies).execute();
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: returnedOrders
-            };
-            response.json(json);
+            response.json(generateOKResponse(
+                returnedOrders.length ?
+                returnedOrders :
+                'No orders to show'
+            ));
         } catch (error) {
             next(error);
         }

@@ -1,7 +1,8 @@
 import express from 'express';
 import {User} from '../entities';
 import {Dependable} from '../entities/protocols';
-import {MiddlewareFuncAsync, Response, ResponseStatusCode} from '../entities/networking';
+import {MiddlewareFuncAsync, ResponseStatusCode} from '../entities/networking';
+import {generateOKResponse, generateRequestError, generateServerError} from './helper-functions';
 
 const UserController = (dependencies: Dependable<User>): {
     addUser: MiddlewareFuncAsync,
@@ -36,11 +37,7 @@ const UserController = (dependencies: Dependable<User>): {
 
             const addedUser = await useCase.add(dependencies).execute({id,username,password,firstName,lastName,level});
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: addedUser
-            };
-            response.json(json);
+            response.json(generateOKResponse(addedUser));
         } catch (error) {
             next(error);
         }
@@ -70,12 +67,9 @@ const UserController = (dependencies: Dependable<User>): {
             } = request.body as User;
 
             const updatedUser = await useCase.update(dependencies).execute({id,username,password,firstName,lastName,level});
+            if (!updatedUser) throw generateServerError('updating user');
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: updatedUser
-            };
-            response.json(json);
+            response.json(generateOKResponse(updatedUser));
         } catch (error) {
             next(error);
         }
@@ -105,12 +99,9 @@ const UserController = (dependencies: Dependable<User>): {
             } = request.body as User;
 
             const deletedUser = await useCase.delete(dependencies).execute({id,username,password,firstName,lastName,level});
+            if (!deletedUser) throw generateServerError('deleting user');
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: deletedUser
-            };
-            response.json(json);
+            response.json(generateOKResponse(deletedUser));
         } catch (error) {
             next(error);
         }
@@ -133,21 +124,9 @@ const UserController = (dependencies: Dependable<User>): {
             const id = request.params.id as string;
 
             const returnedUser = await useCase.getById(dependencies).execute(id);
-            if (!returnedUser) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.NotFound,
-                    message: 'Error getting user',
-                    reason: `No user with id ${id}`
-                };
-                next(rejection);
-                return;
-            }
+            if (!returnedUser) throw generateRequestError('No user with such id', ResponseStatusCode.BadRequest)
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: returnedUser
-            };
-            response.json(json);
+            response.json(generateOKResponse(returnedUser));
         } catch (error) {
             next(error);
         }
@@ -169,13 +148,11 @@ const UserController = (dependencies: Dependable<User>): {
         try {
             const username = request.params.username as string;
 
-            if (!useCase.getByUsername) throw new Error('Internal Server Error');
-            const returnedUser = await useCase.getByUsername(dependencies).execute(username);
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: returnedUser
-            };
-            response.json(json);
+            if (!useCase.getUserByUsername) throw generateServerError('getting user by username');
+            const returnedUser = await useCase.getUserByUsername(dependencies).execute(username);
+            if (!returnedUser) throw generateRequestError('No user with such username', ResponseStatusCode.BadRequest);
+
+            response.json(generateOKResponse(returnedUser));
         } catch (error) {
             next(error);
         }
@@ -195,15 +172,13 @@ const UserController = (dependencies: Dependable<User>): {
         }
 
         try {
-            // TODO: check user access credentials
-
             const returnedUsers = await useCase.getAll(dependencies).execute();
 
-            const json: Response = {
-                status: ResponseStatusCode.OK,
-                message: returnedUsers
-            };
-            response.json(json);
+            response.json(generateOKResponse(
+                returnedUsers.length ?
+                returnedUsers :
+                'No users to show'
+            ));
         } catch (error) {
             next(error);
         }
