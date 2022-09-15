@@ -3,7 +3,7 @@ import {AuthServiceController} from '../../../../controllers/services';
 import {User} from '../../../../entities';
 import {Dependable} from '../../../../entities/protocols';
 
-const AuthRouter = (dependencies: Dependable<User>): express.Router => {
+const AuthServiceRouter = (dependencies: Dependable<User>): express.Router => {
     const router = express.Router();
     const controller = AuthServiceController(dependencies);
 
@@ -14,4 +14,4 @@ const AuthRouter = (dependencies: Dependable<User>): express.Router => {
     return router;
 };
 
-export default AuthRouter;
+export default AuthServiceRouter;

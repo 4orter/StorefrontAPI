@@ -1,9 +1,8 @@
 import express from 'express';
 import {CustomerServiceController} from '../../../../controllers/services';
-import {User} from '../../../../entities';
-import {Dependable} from '../../../../entities/protocols';
+import {Configuration} from '../../../../entities/config';
 
-const CustomerServiceRouter = (dependencies: Dependable<User>): express.Router => {
+const CustomerServiceRouter = (dependencies: Configuration): express.Router => {
     const router = express.Router();
     const controller = CustomerServiceController(dependencies);
 
@@ -13,18 +12,18 @@ const CustomerServiceRouter = (dependencies: Dependable<User>): express.Router =
           .delete(controller.deleteAccount);
 
     router.route('/account/orders').get(controller.getOrders);
-    router.route('/account/orders/:id').get(controller.getOrderById);
+    router.route('/account/orders/:orderId').get(controller.getOrderById);
 
-    router.route('/cart')
-          .get(controller.getCart)
-          .put(controller.updateCart);
-    router.route('/cart/remove-item/:id').delete(controller.removeItemFromCart);
+    router.route('/cart').get(controller.getCart);
+    router.route('/cart/remove-item/:productId').delete(controller.removeItemFromCart);
+    router.route('/checkout').put(controller.checkout);
 
-    router.route('/products').get(controller.getProducts);
-    router.route('/products/:id').get(controller.getProductById);
-    router.route('/products/:id/add-to-cart').post(controller.addItemToCart);
-    router.route('/products/categories').get(controller.getProductCategories);
-    router.route('/products/category/:category').get(controller.getProductsByCategory);
+    router.route('/store/products').get(controller.getProducts);
+    router.route('/store/products/:productId').get(controller.getProductById);
+    router.route('/store/products/:productId/add-to-cart').post(controller.addItemToCart);
+
+    router.route('/store/categories').get(controller.getProductCategories);
+    router.route('/store/categories/:categoryId').get(controller.getProductsByCategory);
 
     return router;
 };

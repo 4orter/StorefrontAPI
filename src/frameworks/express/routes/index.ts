@@ -2,30 +2,58 @@ import express from 'express';
 import {Configuration} from '../../../entities/config';
 import {UserLevel} from '../../../entities/enums';
 import {Token} from './policies';
-import {AuthRouter} from './services';
+import {AuthServiceRouter, CustomerServiceRouter} from './services';
 import UsersRouter from './UsersRouter';
 import ProductsRouter from './ProductsRouter';
-
+import OrdersRouter from './OrdersRouter';
 
 const routes = (dependencies: Configuration): express.Router => {
     const router = express.Router();
 
-    router.use('/', AuthRouter({
-        repository: dependencies.repositories.UsersRepository,
-        useCase: dependencies.useCases.UserUseCase
-    }));
+    router.use('/users', [
+        Token(UserLevel.Admin, {
+            repository: dependencies.repositories.UsersRepository,
+            useCase: dependencies.useCases.UserUseCase
+        }).policy,
+        UsersRouter({
+            repository: dependencies.repositories.UsersRepository,
+            useCase: dependencies.useCases.UserUseCase
+        })
+    ]);
 
-    router.use(Token(UserLevel.Customer).policy);
+    router.use('/orders', [
+        Token(UserLevel.Admin, {
+            repository: dependencies.repositories.UsersRepository,
+            useCase: dependencies.useCases.UserUseCase
+        }).policy,
+        OrdersRouter({
+            repository: dependencies.repositories.OrdersRepository,
+            useCase: dependencies.useCases.OrderUseCase
+        })
+    ]);
 
-    router.use('/users', UsersRouter({
-        repository: dependencies.repositories.UsersRepository,
-        useCase: dependencies.useCases.UserUseCase
-    }));
+    router.use('/products',
+        ProductsRouter({
+            repository: dependencies.repositories.ProductsRepository,
+            useCase: dependencies.useCases.ProductUseCase
+        })
+    );
 
-    router.use('/products', ProductsRouter({
-        repository: dependencies.repositories.ProductsRepository,
-        useCase: dependencies.useCases.ProductUseCase
-    }));
+    router.use('/', [
+        AuthServiceRouter({
+            repository: dependencies.repositories.UsersRepository,
+            useCase: dependencies.useCases.UserUseCase
+        }),
+        Token(UserLevel.Customer, {
+            repository: dependencies.repositories.UsersRepository,
+            useCase: dependencies.useCases.UserUseCase
+        }).policy,
+        CustomerServiceRouter(dependencies)
+    ]);
+
+
+
+
 
     return router;
 };

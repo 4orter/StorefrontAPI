@@ -1,7 +1,7 @@
-import AuthRouter from './AuthRouter';
+import AuthServiceRouter from './AuthServiceRouter';
 import CustomerServiceRouter from './CustomerServiceRouter';
 
 export {
-    AuthRouter,
+    AuthServiceRouter,
     CustomerServiceRouter
 };
