@@ -1,18 +1,17 @@
 import Joi from 'joi';
 import {Product} from '../entities';
 import {ProductCategory} from '../entities/auxiliary';
-import {Response, ResponseStatusCode, ValidationError} from '../entities/networking';
+import {ValidationError} from '../entities/networking';
 import {BusinessUsable, Dependable} from '../entities/protocols';
+import {generateRejection, generateValidationError} from './helper-functions';
 
 const ProductUseCase: BusinessUsable<Product> = {
-    add(dependencies: Dependable<Product>): {execute: (product: Product) => Promise<Product | null>} {
+    add(dependencies: Dependable<Product>): {execute: (product: Product, options?:{protected:boolean}) => Promise<Product>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (product: Product): ValidationError | null=> {
             const schema = Joi.object({
@@ -24,52 +23,32 @@ const ProductUseCase: BusinessUsable<Product> = {
 
             const result = schema.validate(product);
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (product: Product): Promise<Product | null> => {
+        const execute = async (product: Product, options?: {protected:boolean}): Promise<Product> => {
             const validationError = getValidationErrors(product);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.add(product);
+                return await repository.add(product,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error adding product',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error adding product'));
             }
         };
 
         return {execute};
     },
-    update(dependencies: Dependable<Product>): {execute: (product: Product) => Promise<Product | null>} {
+    update(dependencies: Dependable<Product>): {execute: (product: Product, options?:{protected:boolean}) => Promise<Product | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (product: Product): ValidationError | null => {
             const schema = Joi.object({
@@ -81,52 +60,32 @@ const ProductUseCase: BusinessUsable<Product> = {
 
             const result = schema.validate(product);
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (product: Product): Promise<Product | null> => {
+        const execute = async (product: Product, options?: {protected:boolean}): Promise<Product | null> => {
             const validationError = getValidationErrors(product);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.update(product);
+                return await repository.update(product,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error updating product',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error updating product'));
             }
         };
 
         return {execute};
     },
-    delete(dependencies: Dependable<Product>): {execute: (product: Product) => Promise<Product | null>} {
+    delete(dependencies: Dependable<Product>): {execute: (product: Product, options?:{protected:boolean}) => Promise<Product | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (product: Product): ValidationError | null => {
             const schema = Joi.object({
@@ -138,139 +97,101 @@ const ProductUseCase: BusinessUsable<Product> = {
 
             const result = schema.validate(product);
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (product: Product): Promise<Product | null> => {
+        const execute = async (product: Product, options?: {protected:boolean}): Promise<Product | null> => {
             const validationError = getValidationErrors(product);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.delete(product);
+                return await repository.delete(product,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error deleting product',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting product'));
             }
         };
 
         return {execute};
     },
-    getById(dependencies: Dependable<Product>): {execute: (id: string) => Promise<Product | null>} {
+    getById(dependencies: Dependable<Product>): {execute: (id: string | number, options?:{protected:boolean}) => Promise<Product | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (id: string): ValidationError | null => {
+        const getValidationErrors = (id: string | number): ValidationError | null => {
             const schema = Joi.object({
                 id: Joi.string().guid({version:'uuidv4'}).required(),
             });
 
             const result = schema.validate({id});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (id: string): Promise<Product | null> => {
+        const execute = async (id: string | number, options?: {protected:boolean}): Promise<Product | null> => {
             const validationError = getValidationErrors(id);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.getById(id);
+                return await repository.getById(id,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting product by id',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting product by id'));
             }
         };
         return {execute};
     },
-    getAll(dependencies: Dependable<Product>): {execute: () => Promise<Product[] | null>} {
+    getAll(dependencies: Dependable<Product>): {execute: (options?:{protected:boolean}) => Promise<Product[]>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (): ValidationError | null => {
             return null;
         };
 
-        const execute = async (): Promise<Product[] | null> => {
+        const execute = async (options?: {protected:boolean}): Promise<Product[]> => {
             const validationError = getValidationErrors();
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.getAll();
+                return await repository.getAll(options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting product',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting all products'));
             }
         };
 
         return {execute};
     },
-    getByCategory(dependencies: Dependable<Product>): {execute: (category: ProductCategory) => Promise<Product[] | null>} {
+    deleteAll(dependencies: Dependable<Product>): {execute: (options?:{protected:boolean}) => Promise<Product[]>} {
+        const {
+            repository
+        } = dependencies;
+
+        if (!repository) throw new Error('repository should be passed as a dependency');
+
+        const execute = async (options?:{protected:boolean}): Promise<Product[]> => {
+            try {
+                return await repository.deleteAll(options);
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting all products'));
+            }
+        };
+
+        return {execute};
+    },
+    getProductsByCategory(dependencies: Dependable<Product>): {execute: (categoryId: number) => Promise<Product[]>} {
         const {
             repository
         } = dependencies;
@@ -279,57 +200,183 @@ const ProductUseCase: BusinessUsable<Product> = {
             throw new Error('repository should be passed as a dependency');
         }
 
-        const getValidationErrors = (category: ProductCategory): ValidationError | null => {
+        const getValidationErrors = (categoryId: number): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.string().alphanum().required(),
-                name: Joi.string().alphanum().required()
+                categoryId: Joi.string().alphanum().required(),
             });
 
             const result = schema.validate({
-                id: category.id,
-                name: category.name
+                categoryId,
             });
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (category: ProductCategory): Promise<Product[] | null> => {
-            const validationError = getValidationErrors(category);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+        const execute = async (categoryId: number): Promise<Product[]> => {
+            const validationError = getValidationErrors(categoryId);
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                if (!repository.getByCategory) throw new Error();
-                return await repository.getByCategory(category);
+                if (!repository.getProductsByCategory) throw new Error();
+                return await repository.getProductsByCategory(categoryId);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting product by category',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting product by category'));
             }
         };
 
         return {execute};
     },
-    
+    addCategory(dependencies: Dependable<Product>): {execute: (categoryName: string) => Promise<ProductCategory>} {
+        const {
+			repository
+		} = dependencies;
+
+		if (!repository) {
+			throw new Error('repository should be passed as a dependency');
+		}
+
+        const getValidationErrors = (categoryName: string): ValidationError | null => {
+            const schema = Joi.object({
+                categoryName: Joi.string().required()
+            });
+
+            const result = schema.validate({categoryName});
+
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
+            return null;
+        };
+
+        const execute = async (categoryName: string): Promise<ProductCategory> => {
+            const validationError = getValidationErrors(categoryName);
+            if (validationError) return Promise.reject(generateValidationError(validationError));
+
+            try {
+                if (!repository.addCategory) throw new Error();
+                return await repository.addCategory(categoryName);
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error adding category'));
+            }
+        };
+
+        return {execute};
+    },
+    deleteCategory(dependencies: Dependable<Product>): {execute: (categoryId: number) => Promise<ProductCategory | null>} {
+        const {
+			repository
+		} = dependencies;
+
+		if (!repository) {
+			throw new Error('repository should be passed as a dependency');
+		}
+
+        const getValidationErrors = (categoryId: number): ValidationError | null => {
+            const schema = Joi.object({
+                categoryId: Joi.number().required()
+            });
+
+            const result = schema.validate({categoryId});
+
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
+            return null;
+        };
+
+        const execute = async (categoryId: number): Promise<ProductCategory | null> => {
+            const validationError = getValidationErrors(categoryId);
+            if (validationError) return Promise.reject(generateValidationError(validationError));
+
+            try {
+                if (!repository.deleteCategory) throw new Error();
+                return await repository.deleteCategory(categoryId);
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting category'));
+            }
+        };
+
+        return {execute};
+    },
+    getCategory(dependencies: Dependable<Product>): {execute: (categoryId: number) => Promise<ProductCategory | null>} {
+		const {
+			repository
+		} = dependencies;
+
+		if (!repository) {
+			throw new Error('repository should be passed as a dependency');
+		}
+
+        const getValidationErrors = (id: number): ValidationError | null => {
+            const schema = Joi.object({
+                id: Joi.number().required()
+            });
+
+            const result = schema.validate({id});
+
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
+            return null;
+        };
+
+        const execute = async (id: number): Promise<ProductCategory | null> => {
+            const validationError = getValidationErrors(id);
+            if (validationError) return Promise.reject(generateValidationError(validationError));
+
+            try {
+                if (!repository.getCategory) throw new Error();
+                return await repository.getCategory(id);
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting category'));
+            }
+        };
+
+        return {execute};
+    },
+    getAllCategories(dependencies: Dependable<Product>): {execute: () => Promise<ProductCategory[]>} {
+        const {
+            repository
+        } = dependencies;
+
+        if (!repository) throw new Error('repository should be passed as a dependency');
+
+        const execute = async (): Promise<ProductCategory[]> => {
+            try {
+                if (!repository.getAllCategories) throw new Error();
+                return await repository.getAllCategories();
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting all categories'));
+            }
+        };
+
+        return {execute};
+    },
+    deleteAllCategories(dependencies: Dependable<Product>): {execute: () => Promise<ProductCategory[]>} {
+        const {
+            repository
+        } = dependencies;
+
+        if (!repository) throw new Error('repository should be passed as a dependency');
+
+        const execute = async (): Promise<ProductCategory[]> => {
+            try {
+                if (!repository.deleteAllCategories) throw new Error();
+                return await repository.deleteAllCategories();
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting all categories'));
+            }
+        };
+
+        return {execute};
+    }
 };
 
 Object.freeze(ProductUseCase);

@@ -1,18 +1,17 @@
 import Joi from 'joi';
 import {User} from '../entities';
 import {BusinessUsable, Dependable} from '../entities/protocols';
-import {Response, ResponseStatusCode, ValidationError} from '../entities/networking';
+import {ValidationError} from '../entities/networking';
 import {UserSession} from '../entities/auxiliary';
+import {generateRejection, generateValidationError} from './helper-functions';
 
 const UserUseCase: BusinessUsable<User> = {
-    add(dependencies: Dependable<User>): {execute: (user: User) => Promise<User | null>} {
+    add(dependencies: Dependable<User>): {execute: (user: User, options?:{protected:boolean}) => Promise<User>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (user: User): ValidationError | null => {
             const schema = Joi.object({
@@ -26,52 +25,32 @@ const UserUseCase: BusinessUsable<User> = {
 
             const result = schema.validate(user);
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (user: User): Promise<User | null> => {
+        const execute = async (user: User, options?: {protected:boolean}): Promise<User> => {
             const validationError = getValidationErrors(user);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.add(user);
+                return await repository.add(user,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting user by id',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error adding user'));
             }
         };
 
         return {execute};
     },
-    update(dependencies: Dependable<User>): {execute: (user: User) => Promise<User | null>} {
+    update(dependencies: Dependable<User>): {execute: (user: User, options?:{protected:boolean}) => Promise<User | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (user: User): ValidationError | null => {
             const schema = Joi.object({
@@ -85,52 +64,32 @@ const UserUseCase: BusinessUsable<User> = {
 
             const result = schema.validate(user);
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (user: User): Promise<User | null> => {
+        const execute = async (user: User, options?: {protected:boolean}): Promise<User | null> => {
             const validationError = getValidationErrors(user);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.update(user);
+                return await repository.update(user,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting user by id',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error updating user'));
             }
         };
 
         return {execute};
     },
-    delete(dependencies: Dependable<User>): {execute: (user: User) => Promise<User | null>} {
+    delete(dependencies: Dependable<User>): {execute: (user: User, options?:{protected:boolean}) => Promise<User | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (user: User): ValidationError | null => {
             const schema = Joi.object({
@@ -144,105 +103,65 @@ const UserUseCase: BusinessUsable<User> = {
 
             const result = schema.validate(user);
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (user: User): Promise<User | null> => {
+        const execute = async (user: User, options?: {protected:boolean}): Promise<User | null> => {
             const validationError = getValidationErrors(user);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.delete(user);
+                return await repository.delete(user,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting user by id',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting user'));
             }
         };
 
         return {execute};
     },
-    getById(dependencies: Dependable<User>): {execute: (id: string) => Promise<User | null>} {
+    getById(dependencies: Dependable<User>): {execute: (id: string | number, options?:{protected:boolean}) => Promise<User | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (id: string): ValidationError | null => {
+        const getValidationErrors = (id: string | number): ValidationError | null => {
             const schema = Joi.object({
                 id: Joi.string().guid({version:'uuidv4'}).required(),
             });
 
             const result = schema.validate({id});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (id: string): Promise<User | null> => {
+        const execute = async (id: string | number, options?: {protected:boolean}): Promise<User | null> => {
             const validationError = getValidationErrors(id);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.getById(id);
+                return await repository.getById(id,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting user by id',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting user by id'));
             }
         };
         return {execute};
     },
-    getByUsername(dependencies: Dependable<User>): {execute: (username: string) => Promise<User | null>} {
+    getUserByUsername(dependencies: Dependable<User>): {execute: (username: string, options?:{protected:boolean}) => Promise<User | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (username: string): ValidationError | null => {
             const schema = Joi.object({
@@ -251,80 +170,55 @@ const UserUseCase: BusinessUsable<User> = {
 
             const result = schema.validate({username});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (username: string): Promise<User | null> => {
+        const execute = async (username: string, options?:{protected:boolean}): Promise<User | null> => {
             const validationError = getValidationErrors(username);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                if (!repository.getByUsername) throw new Error();
-                return await repository.getByUsername(username);
+                if (!repository.getUserByUsername) throw new Error();
+                return await repository.getUserByUsername(username,options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting user by username',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting user by username'));
             }
         };
         return {execute};
     },
-    getAll(dependencies: Dependable<User>): {execute: () => Promise<User[] | null>} {
+    getAll(dependencies: Dependable<User>): {execute: (options?:{protected:boolean}) => Promise<User[]>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passes as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (): ValidationError | null => {
-            return null;
+        const execute = async (options?:{protected:boolean}): Promise<User[]> => {
+            try {
+                return await repository.getAll(options);
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting all users'));
+            }
         };
 
-        const execute = async (): Promise<User[] | null> => {
-            const validationError = getValidationErrors();
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
+        return {execute};
+    },
+    deleteAll(dependencies: Dependable<User>): {execute: (options?:{protected:boolean}) => Promise<User[]>} {
+        const {
+            repository
+        } = dependencies;
 
-                return Promise.reject(rejection);
-            }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
+        const execute = async (options?:{protected:boolean}): Promise<User[]> => {
             try {
-                return await repository.getAll();
+                return await repository.deleteAll(options);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting users',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting all users'));
             }
         };
 
@@ -335,9 +229,7 @@ const UserUseCase: BusinessUsable<User> = {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passed as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (username: string, password: string): ValidationError | null => {
             const schema = Joi.object({
@@ -347,213 +239,137 @@ const UserUseCase: BusinessUsable<User> = {
 
             const result = schema.validate({username,password});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
-
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
         const execute = async (username: string, password: string): Promise<User | null> => {
             const validationError = getValidationErrors(username, password);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
                 if (!repository.authenticate) throw new Error();
                 return await repository.authenticate(username, password);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error authenticating user',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error authenticating user'));
             }
         };
 
         return {execute};
     },
-    addSession(dependencies: Dependable<User>): {execute: (session: UserSession) => Promise<UserSession | null>} {
+    addSession(dependencies: Dependable<User>): {execute: (secret: string, userId: string) => Promise<UserSession>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passed as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (session: UserSession): ValidationError | null => {
+        const getValidationErrors = (secret: string, userId: string): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.number().optional(),
                 secret: Joi.string().regex(/^(?:[\w-]*\.){2}[\w-]*$/).required(),
                 userId: Joi.string().guid({version:'uuidv4'}).required()
             });
-            const result = schema.validate(session);
+            const result = schema.validate({secret,userId});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (session: UserSession): Promise<UserSession | null> => {
-            const validationError = getValidationErrors(session);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-                return Promise.reject(rejection);
-            }
+        const execute = async (secret: string, userId: string): Promise<UserSession> => {
+            const validationError = getValidationErrors(secret,userId);
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
                 if (!repository.addSession) throw new Error();
-                return await repository.addSession(session);
+                return await repository.addSession(secret,userId);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error adding session',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error adding session'));
             }
         };
 
         return {execute};
     },
-    deleteSession(dependencies: Dependable<User>): {execute: (session: UserSession) => Promise<UserSession | null>} {
+    deleteSession(dependencies: Dependable<User>): {execute: (secret: string, userId: string) => Promise<UserSession | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passed as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (session: UserSession): ValidationError | null => {
+        const getValidationErrors = (secret: string, userId: string): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.number().optional(),
                 secret: Joi.string().regex(/^(?:[\w-]*\.){2}[\w-]*$/).required(),
                 userId: Joi.string().guid({version:'uuidv4'}).required()
             });
-            const result = schema.validate(session);
+            const result = schema.validate({secret,userId});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (session: UserSession): Promise<UserSession | null> => {
-            const validationError = getValidationErrors(session);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-                return Promise.reject(rejection);
-            }
+        const execute = async (secret: string, userId: string): Promise<UserSession | null> => {
+            const validationError = getValidationErrors(secret,userId);
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
                 if (!repository.deleteSession) throw new Error();
-                return await repository.deleteSession(session);
+                return await repository.deleteSession(secret,userId);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error deleting session',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting session'));
             }
         };
 
         return {execute};
     },
-    getSessionById(dependencies: Dependable<User>): {execute: (id: number) => Promise<UserSession | null>} {
+    getSession(dependencies: Dependable<User>): {execute: (sessionId: number) => Promise<UserSession | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passed as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (id: number): ValidationError | null => {
+        const getValidationErrors = (sessionId: number): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.number().required(),
+                sessionId: Joi.number().required(),
             });
-            const result = schema.validate({id});
+            const result = schema.validate({sessionId});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
-        const execute = async (id: number): Promise<UserSession | null> => {
-            const validationError = getValidationErrors(id);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-                return Promise.reject(rejection);
-            }
+        const execute = async (sessionId: number): Promise<UserSession | null> => {
+            const validationError = getValidationErrors(sessionId);
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                if (!repository.getSessionById) throw new Error();
-                return await repository.getSessionById(id);
+                if (!repository.getSession) throw new Error();
+                return await repository.getSession(sessionId);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting session by id',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting session'));
             }
         };
 
         return {execute};
     },
-    getSessionByUserId(dependencies: Dependable<User>): {execute: (userId: string) => Promise<UserSession | null>} {
+    getSessionForUser(dependencies: Dependable<User>): {execute: (userId: string) => Promise<UserSession | null>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passed as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
         const getValidationErrors = (userId: string): ValidationError | null => {
             const schema = Joi.object({
@@ -561,79 +377,58 @@ const UserUseCase: BusinessUsable<User> = {
             });
             const result = schema.validate({userId});
 
-            if (result.error) {
-                return {
-                    field: result.error.details[0].context?.label,
-                    message: result.error.message
-                };
-            }
+            if (result.error) return {
+                field: result.error.details[0].context?.label,
+                message: result.error.message
+            };
             return null;
         };
 
         const execute = async (userId: string): Promise<UserSession | null> => {
             const validationError = getValidationErrors(userId);
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-                return Promise.reject(rejection);
-            }
+            if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                if (!repository.getSessionByUserId) throw new Error();
-                return await repository.getSessionByUserId(userId);
+                if (!repository.getSessionForUser) throw new Error();
+                return await repository.getSessionForUser(userId);
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting session by user id',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting session for user'));
             }
         };
 
         return {execute};
     },
-    getAllSessions(dependencies: Dependable<User>): {execute: () => Promise<UserSession[] | null>} {
+    getAllSessions(dependencies: Dependable<User>): {execute: () => Promise<UserSession[]>} {
         const {
             repository
         } = dependencies;
 
-        if (!repository) {
-            throw new Error('repository should be passed as a dependency');
-        }
+        if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (): ValidationError | null => {
-            return null;
-        };
-
-        const execute = async (): Promise<UserSession[] | null> => {
-            const validationError = getValidationErrors();
-            if (validationError) {
-                const rejection: Response = {
-                    status: ResponseStatusCode.BadRequest,
-                    message: 'Validation Error',
-                    reason: 'Bad Request Sent',
-                    validationError
-                };
-                return Promise.reject(rejection);
-            }
-
+        const execute = async (): Promise<UserSession[]> => {
             try {
                 if (!repository.getAllSessions) throw new Error();
                 return await repository.getAllSessions();
             } catch (error) {
-                // TODO: - Use error tracking (e.g. TrackJS) for error logging
-                const rejection: Response = {
-                    status: ResponseStatusCode.InternalServerError,
-                    message: (error as Error).message || 'Error getting user sessions',
-                    reason: 'Internal Server Error',
-                };
-                return Promise.reject(rejection);
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting all sessions'));
+            }
+        };
+
+        return {execute};
+    },
+    deleteAllSessions(dependencies: Dependable<User>): {execute: () => Promise<UserSession[]>} {
+        const {
+            repository
+        } = dependencies;
+
+        if (!repository) throw new Error('repository should be passed as a dependency');
+
+        const execute = async (): Promise<UserSession[]> => {
+            try {
+                if (!repository.deleteAllSessions) throw new Error();
+                return await repository.deleteAllSessions();
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting all sessions'));
             }
         };
 
