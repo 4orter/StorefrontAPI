@@ -1,6 +1,6 @@
 enum Environment {
     Test = 'test',
-    Production = 'dev',
+    Production = 'prod',
     Mock = 'mock'
 }
 

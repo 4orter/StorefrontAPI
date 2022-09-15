@@ -6,7 +6,7 @@ type User = {
     lastName?: string;
     username: string;
     password?: string;
-    level: UserLevel
+    level?: UserLevel
 };
 
 export default User;

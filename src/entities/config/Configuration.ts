@@ -1,4 +1,5 @@
 import {Pool} from 'pg';
+import Order from '../Order';
 import Product from '../Product';
 import {BusinessUsable, DataStorable, Initializable} from '../protocols';
 import User from '../User';
@@ -8,11 +9,13 @@ type Configuration = {
     type: Environment,
     useCases: {
         UserUseCase?: BusinessUsable<User>,
-        ProductUseCase?: BusinessUsable<Product>
+        ProductUseCase?: BusinessUsable<Product>,
+        OrderUseCase?: BusinessUsable<Order>
     },
     repositories: {
         UsersRepository?: DataStorable<User>,
-        ProductsRepository?: DataStorable<Product>
+        ProductsRepository?: DataStorable<Product>,
+        OrdersRepository?: DataStorable<Order>
     },
     database: Initializable | Pool
 };
