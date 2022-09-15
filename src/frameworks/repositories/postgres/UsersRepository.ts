@@ -1,106 +1,146 @@
 import brcypt from 'bcrypt';
 import vars from '../../../config/vars';
 import {User} from '../../../entities';
-import {DataStorable, UserSessionStorable, UserStorable} from '../../../entities/protocols';
+import {DataStorable} from '../../../entities/protocols';
 import {PostgresDatabase} from '../../databases/postgres';
 import {UserSession} from '../../../entities/auxiliary';
 
-const selectClause = (): string => {
-    return 'SELECT id, username, first_name AS "firstName", last_name AS "lastName", level';
+const selectClause = 'SELECT id, username, password_digest AS "password", first_name AS "firstName", last_name AS "lastName", level';
+const returningClause = 'RETURNING id, username, password_digest AS "password", first_name AS "firstName", last_name AS "lastName", level';
+const sessionSelectClause = 'SELECT id, secret, user_id AS "userId"';
+const sessionReturningClause = 'RETURNING id, secret, user_id AS "userId"';
+const protectify = (user: User): User => {
+    user.password = (user.password as string).replace(/./g, '*');
+    delete user.id;
+    delete user.level;
+    return user;
 };
 
-const returningClause = (): string => {
-    return 'RETURNING id, username, first_name AS "firstName", last_name AS "lastName", level';
-};
-
-const UsersRepository: DataStorable<User> & UserStorable & UserSessionStorable = {
-    async add(user: User): Promise<User | null> {
+const UsersRepository: DataStorable<User> = {
+    async add(user: User, options?): Promise<User> {
         const {username,firstName,lastName,level} = user;
         try {
             const conn = await PostgresDatabase.connect();
             const hash = brcypt.hashSync(user.password + vars.bcryptSecret, vars.bcryptRounds);
             const result = await conn.query(
-                `INSERT INTO users (username, password_digest, first_name, last_name, level) VALUES ($1, $2, $3, $4, $5) ${returningClause()}`,
-                [username, hash, firstName, lastName, level]
+                `INSERT INTO users (username, password_digest, first_name, last_name, level) VALUES ($1, $2, $3, $4, $5) ${returningClause}`,
+                [username,hash,firstName,lastName,level]
             );
-
             conn.release();
-            return result.rows.length ? result.rows[0] : null;
+
+            const _user = result.rows[0] as User;
+            if (options?.protected) return protectify({..._user});
+            return _user;
         } catch (error) {
-            console.log(error);
-            throw new Error('Error creating user');
+            throw new Error('Error while adding user');
         }
     },
-    async update(user: User): Promise<User | null> {
-        const {id,username,password,firstName,lastName} = user;
+    async update(user: User, options?): Promise<User | null> {
+        const {id,username,firstName,lastName} = user;
         try {
             const conn = await PostgresDatabase.connect();
+            const hash = brcypt.hashSync(user.password + vars.bcryptSecret, vars.bcryptRounds);
             const result = await conn.query(
-                `UPDATE users SET username = ($1), password_digest = ($2), first_name = ($3), last_name = ($4) WHERE id = ($5)} ${returningClause()}`,
-                [username,password,firstName,lastName,id]
+                `UPDATE users SET username = ($1), password_digest = ($2), first_name = ($3), last_name = ($4) WHERE id = ($5) ${returningClause}`,
+                [username,hash,firstName,lastName,id]
             );
             conn.release();
-            return result.rows.length ? result.rows[0] : null;
+
+            if (!result.rows.length) return null;
+
+            const _user = result.rows[0] as User;
+            if (options?.protected) return protectify({..._user});
+            return _user;
         } catch (error) {
-            throw new Error('Error updating user');
+            throw new Error('Error while updating user');
         }
     },
-    async delete(user: User): Promise<User | null> {
+    async delete(user: User, options?): Promise<User | null> {
         const {id} = user;
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                `DELETE FROM users WHERE id = ($1) ${returningClause()}`,
+                `DELETE FROM users WHERE id = ($1) ${returningClause}`,
                 [id]
             );
             conn.release();
-            return result.rows.length ? result.rows[0] : null;
+
+            if (!result.rows.length) return null;
+
+            const _user = result.rows[0] as User;
+            if (options?.protected) return protectify({..._user});
+            return _user;
         } catch (error) {
-            throw new Error('Error deleting user');
+            throw new Error('Error while deleting user');
         }
     },
-    async getById(id: string): Promise<User | null> {
+    async getById(id: string, options?): Promise<User | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                `${selectClause()} FROM users WHERE id = ($1)`,
+                `${selectClause} FROM users WHERE id = ($1)`,
                 [id]
             );
             conn.release();
-            return result.rows.length ? result.rows[0] : null;
+
+            if (!result.rows.length) return null;
+
+            const _user = result.rows[0] as User;
+            if (options?.protected) return protectify({..._user});
+            return _user;
         } catch (error) {
-            throw new Error('Error get user by id');
+            throw new Error('Error while getting user by id');
         }
     },
-    async getByUsername(username: string): Promise<User | null> {
+    async getUserByUsername(username: string, options?): Promise<User | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                `${selectClause()} FROM users WHERE username = ($1)`,
+                `${selectClause} FROM users WHERE username = ($1)`,
                 [username]
             );
             conn.release();
-            return result.rows.length ? result.rows[0] : null;
+
+            if (!result.rows.length) return null;
+
+            const _user = result.rows[0] as User;
+            if (options?.protected) return protectify({..._user});
+            return _user;
         } catch (error) {
-            console.log(error);
             throw new Error('Error getting user by username');
         }
     },
-    async getAll(): Promise<User[] | null> {
+    async getAll(options?): Promise<User[]> {
         try {
             const conn = await PostgresDatabase.connect();
-            const result = await conn.query(`${selectClause()} FROM users`);
+            const result = await conn.query(`${selectClause} FROM users`);
             conn.release();
-            return result.rows.length ? result.rows : null;
+            if (options?.protected) {
+                return result.rows.map((user: User) => protectify({...user}));
+            }
+            return result.rows;
         } catch (error) {
-            throw new Error('Error getting users');
+            throw new Error('Error while getting all users');
+        }
+    },
+    async deleteAll(options?): Promise<User[]> {
+        try {
+            const conn = await PostgresDatabase.connect();
+            const result = await conn.query(`DELETE FROM users ${returningClause}`);
+            conn.release();
+            if (options?.protected) {
+                return result.rows.map((user: User) => protectify({...user}));
+            }
+            return result.rows;
+        } catch (error) {
+            throw new Error('Error while deleting all users');
         }
     },
     async authenticate(username: string, password: string): Promise<User | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                `${selectClause()}, password_digest AS password FROM users WHERE username = ($1)`,
+                `${selectClause} FROM users WHERE username = ($1)`,
                 [username]
             );
             conn.release();
@@ -108,7 +148,6 @@ const UsersRepository: DataStorable<User> & UserStorable & UserSessionStorable =
             if (result.rows.length) {
                 const user = result.rows[0] as User;
                 if (brcypt.compareSync(password + vars.bcryptSecret, (user.password || ''))) {
-                    delete user.password;
                     return user;
                 }
                 return null;
@@ -118,25 +157,25 @@ const UsersRepository: DataStorable<User> & UserStorable & UserSessionStorable =
             throw new Error('Error authenticating user');
         }
     },
-    async addSession(session: UserSession): Promise<UserSession | null> {
+    async addSession(secret: string, userId: string): Promise<UserSession> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                'INSERT INTO user_sessions (secret, user_id) VALUES ($1, $2) RETURNING *',
-                [session.secret, session.userId]
+                `INSERT INTO user_sessions (secret, user_id) VALUES ($1, $2) ${sessionReturningClause}`,
+                [secret,userId]
             );
             conn.release();
-            return result.rows.length ? result.rows[0] : null;
+            return result.rows[0];
         } catch (error) {
             throw new Error('Error creating new session for user');
         }
     },
-    async deleteSession(session: UserSession): Promise<UserSession | null> {
+    async deleteSession(secret: string, userId: string): Promise<UserSession | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                'DELETE FROM user_sessions WHERE user_id = ($1) RETURNING *',
-                [session.userId]
+                `DELETE FROM user_sessions WHERE user_id = ($1) AND secret = ($2) ${sessionReturningClause}`,
+                [userId,secret]
             );
             conn.release();
             return result.rows.length ? result.rows[0] : null;
@@ -144,12 +183,12 @@ const UsersRepository: DataStorable<User> & UserStorable & UserSessionStorable =
             throw new Error('Error deleting session for user');
         }
     },
-    async getSessionById(id: number): Promise<UserSession | null> {
+    async getSession(sessionId: number): Promise<UserSession | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                'SELECT * FROM user_sessions WHERE id = ($1)',
-                [id]
+                `${sessionSelectClause} FROM user_sessions WHERE id = ($1)`,
+                [sessionId]
             );
             conn.release();
             return result.rows.length ? result.rows[0] : null;
@@ -157,11 +196,11 @@ const UsersRepository: DataStorable<User> & UserStorable & UserSessionStorable =
             throw new Error('Error getting user session by id');
         }
     },
-    async getSessionByUserId(userId: string): Promise<UserSession | null> {
+    async getSessionForUser(userId: string): Promise<UserSession | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                'SELECT * FROM user_sessions WHERE user_id = ($1)',
+                `${sessionSelectClause} FROM user_sessions WHERE user_id = ($1)`,
                 [userId]
             );
             conn.release();
@@ -170,12 +209,22 @@ const UsersRepository: DataStorable<User> & UserStorable & UserSessionStorable =
             throw new Error('Error getting user session by user id');
         }
     },
-    async getAllSessions(): Promise<UserSession[] | null> {
+    async getAllSessions(): Promise<UserSession[]> {
         try {
             const conn = await PostgresDatabase.connect();
-            const result = await conn.query('SELECT * FROM user_sessions');
+            const result = await conn.query(`${sessionSelectClause} FROM user_sessions`);
             conn.release();
-            return result.rows.length ? result.rows[0] : null;
+            return result.rows;
+        } catch (error) {
+            throw new Error('Error getting user sessions');
+        }
+    },
+    async deleteAllSessions(): Promise<UserSession[]> {
+        try {
+            const conn = await PostgresDatabase.connect();
+            const result = await conn.query(`DELETE FROM user_sessions ${sessionReturningClause}`);
+            conn.release();
+            return result.rows;
         } catch (error) {
             throw new Error('Error getting user sessions');
         }
