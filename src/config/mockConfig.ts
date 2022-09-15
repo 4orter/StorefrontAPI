@@ -1,17 +1,19 @@
 import {Configuration, Environment} from '../entities/config';
 import {MockDatabase} from '../frameworks/databases/mock';
-import {UsersRepository, ProductsRepository} from '../frameworks/repositories/mock';
-import {ProductUseCase, UserUseCase} from '../use-cases';
+import {UsersRepository, ProductsRepository, OrdersRepository} from '../frameworks/repositories/mock';
+import {ProductUseCase, UserUseCase, OrderUseCase} from '../use-cases';
 
 const mockConfig: Configuration = {
-    type: Environment.Test,
+    type: Environment.Mock,
     useCases: {
         UserUseCase,
-        ProductUseCase
+        ProductUseCase,
+        OrderUseCase
     },
     repositories: {
         UsersRepository,
-        ProductsRepository
+        ProductsRepository,
+        OrdersRepository
     },
     database: MockDatabase
 };

@@ -3,8 +3,8 @@ import {PostgresDatabase} from '../frameworks/databases/postgres';
 import {UsersRepository, ProductsRepository, OrdersRepository} from '../frameworks/repositories/postgres';
 import {OrderUseCase, ProductUseCase, UserUseCase} from '../use-cases';
 
-const prodConfig: Configuration = {
-    type: Environment.Production,
+const testConfig: Configuration = {
+    type: Environment.Test,
     useCases: {
         UserUseCase,
         ProductUseCase,
@@ -18,5 +18,5 @@ const prodConfig: Configuration = {
     database: PostgresDatabase
 };
 
-Object.freeze(prodConfig);
-export default prodConfig;
+Object.freeze(testConfig);
+export default testConfig;
