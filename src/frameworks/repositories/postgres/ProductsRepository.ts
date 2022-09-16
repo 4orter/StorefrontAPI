@@ -26,7 +26,6 @@ const ProductsRepository: DataStorable<Product> = {
             if (options?.protected) return protectify({..._product});
             return _product;
         } catch (error) {
-            console.log(error);
             throw new Error('Error while adding product');
         }
     },
@@ -109,7 +108,6 @@ const ProductsRepository: DataStorable<Product> = {
             }
             return result.rows;
         } catch (error) {
-            console.log(error);
             throw new Error('Error while deleting all products');
         }
     },
@@ -186,7 +184,6 @@ const ProductsRepository: DataStorable<Product> = {
             conn.release();
             return result.rows;
         } catch (error) {
-            console.log(error);
             throw new Error('Error while deleting all categories');
         }
     }

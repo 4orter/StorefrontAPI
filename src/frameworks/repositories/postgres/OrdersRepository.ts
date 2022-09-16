@@ -319,7 +319,27 @@ const OrdersRepository: DataStorable<Order> = {
         } catch (error) {
             throw new Error('Error while deleting all products in order');
         }
-    }
+    },
+    async getAllOrderProducts(): Promise<OrderProduct[]> {
+        try {
+            const conn = await PostgresDatabase.connect();
+            const result = await conn.query(`${orderProductSelectClause} FROM order_products`);
+            conn.release();
+            return result.rows;
+        } catch (error) {
+            throw new Error('Error while getting all order products');
+        }
+    },
+    async deleteAllOrderProducts(): Promise<OrderProduct[]> {
+        try {
+            const conn = await PostgresDatabase.connect();
+            const result = await conn.query(`DELETE FROM order_products ${orderProductReturningClause}`);
+            conn.release();
+            return result.rows;
+        } catch (error) {
+            throw new Error('Error while deleting all order products');
+        }
+    },
 };
 
 Object.freeze(OrdersRepository);

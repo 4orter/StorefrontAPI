@@ -58,7 +58,7 @@ const OrdersRepository: DataStorable<Order> = {
                 status:order.status
             };
         }
-       return order;
+        return order;
     },
     async getAll(options?): Promise<Order[]> {
         if (options?.protected) {
@@ -219,6 +219,14 @@ const OrdersRepository: DataStorable<Order> = {
             quantity: orderProduct.quantity,
             price: (products[index] as Product).price
         }));
+    },
+    async getAllOrderProducts(): Promise<OrderProduct[]> {
+        return MockDatabase.orderProducts;
+    },
+    async deleteAllOrderProducts(): Promise<OrderProduct[]> {
+        const orderProducts = MockDatabase.orderProducts;
+        MockDatabase.orderProducts.length = 0;
+        return orderProducts;
     }
 };
 

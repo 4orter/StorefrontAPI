@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import {Order} from '../entities';
+import {OrderProduct} from '../entities/auxiliary';
 import {ValidationError} from '../entities/networking';
 import {BusinessUsable, Dependable} from '../entities/protocols';
 import {generateRejection, generateValidationError} from './helper-functions';
@@ -475,8 +476,43 @@ const OrderUseCase: BusinessUsable<Order> = {
         };
 
         return {execute};
-    }
+    },
+    getAllOrderProducts(dependencies: Dependable<Order>): {execute: () => Promise<OrderProduct[]>} {
+        const {
+            repository
+        } = dependencies;
 
+        if (!repository) throw new Error('repository should be passed as a dependency');
+
+        const execute = async (): Promise<OrderProduct[]> => {
+            try {
+                if (!repository.getAllOrderProducts) throw new Error();
+                return await repository.getAllOrderProducts();
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error getting all order products'));
+            }
+        };
+
+        return {execute};
+    },
+    deleteAllOrderProducts(dependencies: Dependable<Order>): {execute: () => Promise<OrderProduct[]>} {
+        const {
+            repository
+        } = dependencies;
+
+        if (!repository) throw new Error('repository should be passed as a dependency');
+
+        const execute = async (): Promise<OrderProduct[]> => {
+            try {
+                if (!repository.deleteAllOrderProducts) throw new Error();
+                return await repository.deleteAllOrderProducts();
+            } catch (error) {
+                return Promise.reject(generateRejection((error as Error).message || 'Error deleting all order products'));
+            }
+        };
+
+        return {execute};
+    }
 };
 
 Object.freeze(OrderUseCase);
