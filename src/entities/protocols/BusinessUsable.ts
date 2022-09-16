@@ -1,5 +1,5 @@
 import {Order, Product, User} from '..';
-import {ProductCategory, UserSession} from '../auxiliary';
+import {OrderProduct, ProductCategory, UserSession} from '../auxiliary';
 import Dependable from './Dependable';
 
 interface BusinessUsable<T> {
@@ -37,6 +37,8 @@ interface BusinessUsable<T> {
     getProductsInOrder?(dependencies: Dependable<Order>): {execute: (orderId: number) => Promise<{name: string, quantity: number, price: number}[]>};
     deleteAllOrdersForUser?(dependencies: Dependable<Order>): {execute: (userId: string, options?:{protected:boolean}) => Promise<Order[]>};
     deleteAllProductsInOrder?(dependencies: Dependable<Order>): {execute: (orderId: number) => Promise<{name: string, quantity: number, price: number}[]>};
+    getAllOrderProducts?(dependencies: Dependable<Order>): {execute: () => Promise<OrderProduct[]>};
+    deleteAllOrderProducts?(dependencies: Dependable<Order>): {execute: () => Promise<OrderProduct[]>};
 };
 
 export default BusinessUsable;

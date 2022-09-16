@@ -1,5 +1,5 @@
 import {Product, Order, User} from '..';
-import {ProductCategory, UserSession} from '../auxiliary';
+import {OrderProduct, ProductCategory, UserSession} from '../auxiliary';
 
 interface DataStorable<T> {
     add(item: T, options?:{protected:boolean}): Promise<T>;
@@ -36,6 +36,8 @@ interface DataStorable<T> {
     getProductsInOrder?(orderId: number): Promise<{name: string, quantity: number, price: number}[]>;
     deleteAllOrdersForUser?(userId: string, options?:{protected:boolean}): Promise<Order[]>;
     deleteAllProductsInOrder?(orderId: number): Promise<{name: string, quantity: number, price: number}[]>;
+    getAllOrderProducts?(): Promise<OrderProduct[]>;
+    deleteAllOrderProducts?(): Promise<OrderProduct[]>;
 }
 
 export default DataStorable;
