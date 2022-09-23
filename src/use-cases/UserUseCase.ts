@@ -57,8 +57,8 @@ const UserUseCase: BusinessUsable<User> = {
                 id: Joi.string().guid({version:'uuidv4'}).required(),
                 username: Joi.string().required(),
                 password: Joi.string().required(),
-                firstName: Joi.string().optional(),
-                lastName: Joi.string().optional(),
+                firstName: Joi.string().required(),
+                lastName: Joi.string().required(),
                 level: Joi.number().min(0).max(1).required()
             });
 

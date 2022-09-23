@@ -4,7 +4,7 @@ type User = {
     id?: string;
     firstName?: string;
     lastName?: string;
-    username: string;
+    username?: string;
     password?: string;
     level?: UserLevel
 };

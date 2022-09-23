@@ -85,9 +85,9 @@ const UsersRepository: DataStorable<User> = {
 
             if (!result.rows.length) return null;
 
-            const _user = result.rows[0] as User;
-            if (options?.protected) return protectify({..._user});
-            return _user;
+            const user = result.rows[0] as User;
+            if (options?.protected) return protectify({...user});
+            return user;
         } catch (error) {
             throw new Error('Error while getting user by id');
         }
@@ -103,9 +103,9 @@ const UsersRepository: DataStorable<User> = {
 
             if (!result.rows.length) return null;
 
-            const _user = result.rows[0] as User;
-            if (options?.protected) return protectify({..._user});
-            return _user;
+            const user = result.rows[0] as User;
+            if (options?.protected) return protectify({...user});
+            return user;
         } catch (error) {
             throw new Error('Error getting user by username');
         }

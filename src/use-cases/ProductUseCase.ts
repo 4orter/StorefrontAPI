@@ -18,7 +18,8 @@ const ProductUseCase: BusinessUsable<Product> = {
                 id: Joi.string().guid({version:'uuidv4'}).optional(),
                 name: Joi.string().required(),
                 description: Joi.string(),
-                price: Joi.number().required()
+                price: Joi.number().required(),
+                categoryId: Joi.any().optional()
             });
 
             const result = schema.validate(product);
@@ -55,7 +56,8 @@ const ProductUseCase: BusinessUsable<Product> = {
                 id: Joi.string().guid({version:'uuidv4'}).required(),
                 name: Joi.string().required(),
                 description: Joi.string(),
-                price: Joi.number().required()
+                price: Joi.number().required(),
+                categoryId: Joi.any().optional()
             });
 
             const result = schema.validate(product);
@@ -90,9 +92,10 @@ const ProductUseCase: BusinessUsable<Product> = {
         const getValidationErrors = (product: Product): ValidationError | null => {
             const schema = Joi.object({
                 id: Joi.string().guid({version:'uuidv4'}).required(),
-                uname: Joi.string().required(),
+                name: Joi.string().required(),
                 description: Joi.string().optional(),
-                price: Joi.number().required()
+                price: Joi.number().required(),
+                categoryId: Joi.any().optional()
             });
 
             const result = schema.validate(product);
@@ -202,11 +205,11 @@ const ProductUseCase: BusinessUsable<Product> = {
 
         const getValidationErrors = (categoryId: number): ValidationError | null => {
             const schema = Joi.object({
-                categoryId: Joi.string().alphanum().required(),
+                categoryId: Joi.number().required(),
             });
 
             const result = schema.validate({
-                categoryId,
+                categoryId
             });
 
             if (result.error) return {

@@ -124,7 +124,7 @@ const UserController = (dependencies: Dependable<User>): {
             const id = request.params.id as string;
 
             const returnedUser = await useCase.getById(dependencies).execute(id);
-            if (!returnedUser) throw generateRequestError('No user with such id', ResponseStatusCode.BadRequest)
+            if (!returnedUser) throw generateRequestError('No user with such id', ResponseStatusCode.BadRequest);
 
             response.json(generateOKResponse(returnedUser));
         } catch (error) {
