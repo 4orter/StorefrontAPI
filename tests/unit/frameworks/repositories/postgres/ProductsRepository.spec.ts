@@ -5,7 +5,7 @@ import {ProductsRepository} from '../../../../../src/frameworks/repositories/pos
 describe('Postgres Product Repository Tests', (): void => {
     let testProduct: Product;
 
-    beforeEach((): void => {
+    beforeAll((): void => {
         testProduct = {
             name: 'My Product',
             description: 'My product\'s description',
@@ -56,10 +56,6 @@ describe('Postgres Product Repository Tests', (): void => {
             }) as Product;
 
             expect(updatedProduct).toBeDefined();
-            expect(updatedProduct.id).toBeDefined();
-            expect(updatedProduct.name).toBeDefined();
-            expect(updatedProduct.description).toBeDefined();
-            expect(updatedProduct.price).toBeDefined();
             expect(updatedProduct.id).toBe(addedProduct.id);
             expect(updatedProduct.name).not.toBe(addedProduct.name);
             expect(updatedProduct.description).not.toBe(addedProduct.description);
@@ -76,9 +72,6 @@ describe('Postgres Product Repository Tests', (): void => {
 
             expect(updatedProduct).toBeDefined();
             expect(updatedProduct.id).toBeUndefined();
-            expect(updatedProduct.name).toBeDefined();
-            expect(updatedProduct.description).toBeDefined();
-            expect(updatedProduct.price).toBeDefined();
             expect(updatedProduct.name).not.toBe(addedProduct.name);
             expect(updatedProduct.description).not.toBe(addedProduct.description);
             expect(updatedProduct.price).toBe(addedProduct.price);
@@ -101,10 +94,6 @@ describe('Postgres Product Repository Tests', (): void => {
             const deletedProduct = await ProductsRepository.delete(addedProduct) as Product;
 
             expect(deletedProduct).toBeDefined();
-            expect(deletedProduct.id).toBeDefined();
-            expect(deletedProduct.name).toBeDefined();
-            expect(deletedProduct.description).toBeDefined();
-            expect(deletedProduct.price).toBeDefined();
             expect(deletedProduct.id).toBe(addedProduct.id);
             expect(deletedProduct.name).toBe(addedProduct.name);
             expect(deletedProduct.description).toBe(addedProduct.description);
@@ -117,9 +106,6 @@ describe('Postgres Product Repository Tests', (): void => {
 
             expect(deletedProduct).toBeDefined();
             expect(deletedProduct.id).toBeUndefined();
-            expect(deletedProduct.name).toBeDefined();
-            expect(deletedProduct.description).toBeDefined();
-            expect(deletedProduct.price).toBeDefined();
             expect(deletedProduct.name).toBe(addedProduct.name);
             expect(deletedProduct.description).toBe(addedProduct.description);
             expect(deletedProduct.price).toBe(addedProduct.price);
@@ -127,7 +113,6 @@ describe('Postgres Product Repository Tests', (): void => {
 
         it('Deleting product with invalid id should return null', async (): Promise<void> => {
             const deletedProduct = await ProductsRepository.delete(testProduct);
-
             expect(deletedProduct).toBeNull();
         });
     });
@@ -138,10 +123,6 @@ describe('Postgres Product Repository Tests', (): void => {
             const returnedProduct = await ProductsRepository.getById((addedProduct.id as string)) as Product;
 
             expect(returnedProduct).toBeDefined();
-            expect(returnedProduct.id).toBeDefined();
-            expect(returnedProduct.name).toBeDefined();
-            expect(returnedProduct.description).toBeDefined();
-            expect(returnedProduct.price).toBeDefined();
             expect(returnedProduct.id).toBe(addedProduct.id);
             expect(returnedProduct.name).toBe(addedProduct.name);
             expect(returnedProduct.description).toBe(addedProduct.description);
@@ -154,9 +135,6 @@ describe('Postgres Product Repository Tests', (): void => {
 
             expect(returnedProduct).toBeDefined();
             expect(returnedProduct.id).toBeUndefined();
-            expect(returnedProduct.name).toBeDefined();
-            expect(returnedProduct.description).toBeDefined();
-            expect(returnedProduct.price).toBeDefined();
             expect(returnedProduct.name).toBe(addedProduct.name);
             expect(returnedProduct.description).toBe(addedProduct.description);
             expect(returnedProduct.price).toBe(addedProduct.price);
@@ -165,7 +143,6 @@ describe('Postgres Product Repository Tests', (): void => {
         it('Getting product with invalid id should return null', async (): Promise<void> => {
             await ProductsRepository.add(testProduct);
             const returnedProduct = await ProductsRepository.getById(uuid());
-
             expect(returnedProduct).toBeNull();
         });
     });
@@ -187,9 +164,6 @@ describe('Postgres Product Repository Tests', (): void => {
             expect(products).toBeDefined();
             expect(products.length).toBe(1);
             expect(products[0].id).toBeUndefined();
-            expect(products[0].name).toBeDefined();
-            expect(products[0].description).toBeDefined();
-            expect(products[0].price).toBeDefined();
             expect(products[0].name).toBe(addedProduct.name);
             expect(products[0].description).toBe(addedProduct.description);
             expect(products[0].price).toBe(addedProduct.price);
@@ -213,9 +187,6 @@ describe('Postgres Product Repository Tests', (): void => {
             expect(products).toBeDefined();
             expect(products.length).toBe(1);
             expect(products[0].id).toBeUndefined();
-            expect(products[0].name).toBeDefined();
-            expect(products[0].description).toBeDefined();
-            expect(products[0].price).toBeDefined();
             expect(products[0].name).toBe(addedProduct.name);
             expect(products[0].description).toBe(addedProduct.description);
             expect(products[0].price).toBe(addedProduct.price);
@@ -276,8 +247,6 @@ describe('Postgres Product Repository Tests', (): void => {
             const deletedCategory = await ProductsRepository.deleteCategory?.((addedCategory?.id as number));
 
             expect(deletedCategory).toBeDefined();
-            expect(deletedCategory?.id).toBeDefined();
-            expect(deletedCategory?.name).toBeDefined();
             expect(deletedCategory?.id).toBe(addedCategory?.id);
             expect(deletedCategory?.name).toBe(addedCategory?.name);
         });
@@ -289,8 +258,6 @@ describe('Postgres Product Repository Tests', (): void => {
             const returnedCategory = await ProductsRepository.getCategory?.((addedCategory?.id as number));
 
             expect(returnedCategory).toBeDefined();
-            expect(returnedCategory?.id).toBeDefined();
-            expect(returnedCategory?.name).toBeDefined();
             expect(returnedCategory?.id).toBe(returnedCategory?.id);
             expect(returnedCategory?.name).toBe(returnedCategory?.name);
         });

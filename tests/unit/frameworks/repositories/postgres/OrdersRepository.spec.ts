@@ -7,7 +7,7 @@ describe('Postgres Order Repository Tests', (): void => {
     let testOrder: Order;
     let testUser: User;
 
-    beforeEach((): void => {
+    beforeAll((): void => {
         testOrder = {
             status: OrderStatus.Active
         };
@@ -30,8 +30,6 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(addedOrder).toBeDefined();
             expect(addedOrder.id).toBeDefined();
-            expect(addedOrder.status).toBeDefined();
-            expect(addedOrder.userId).toBeDefined();
             expect(addedOrder.status).toBe(OrderStatus.Active);
             expect(addedOrder.userId).toBe(addedUser.id);
         });
@@ -42,7 +40,6 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(addedOrder).toBeDefined();
             expect(addedOrder.id).toBeDefined();
-            expect(addedOrder.status).toBeDefined();
             expect(addedOrder.status).toBe(OrderStatus.Active);
             expect(addedOrder.userId).toBeUndefined();
         });
@@ -58,9 +55,6 @@ describe('Postgres Order Repository Tests', (): void => {
             });
 
             expect(updatedOrder).toBeDefined();
-            expect(updatedOrder?.id).toBeDefined();
-            expect(updatedOrder?.status).toBeDefined();
-            expect(updatedOrder?.userId).toBeDefined();
             expect(updatedOrder?.id).toBe(addedOrder.id);
             expect(updatedOrder?.userId).toBe(addedOrder.userId);
             expect(updatedOrder?.status).not.toBe(addedOrder.status);
@@ -75,8 +69,6 @@ describe('Postgres Order Repository Tests', (): void => {
             },{protected:true});
 
             expect(updatedOrder).toBeDefined();
-            expect(updatedOrder?.id).toBeDefined();
-            expect(updatedOrder?.status).toBeDefined();
             expect(updatedOrder?.id).toBe(addedOrder.id);
             expect(updatedOrder?.status).not.toBe(addedOrder.status);
             expect(updatedOrder?.userId).toBeUndefined();
@@ -102,9 +94,6 @@ describe('Postgres Order Repository Tests', (): void => {
             const deletedOrder = await OrdersRepository.delete(addedOrder);
 
             expect(deletedOrder).toBeDefined();
-            expect(deletedOrder?.id).toBeDefined();
-            expect(deletedOrder?.status).toBeDefined();
-            expect(deletedOrder?.userId).toBeDefined();
             expect(deletedOrder?.id).toBe(addedOrder.id);
             expect(deletedOrder?.status).toBe(addedOrder.status);
             expect(deletedOrder?.userId).toBe(addedOrder.userId);
@@ -116,8 +105,6 @@ describe('Postgres Order Repository Tests', (): void => {
             const deletedOrder = await OrdersRepository.delete(addedOrder,{protected:true});
 
             expect(deletedOrder).toBeDefined();
-            expect(deletedOrder?.id).toBeDefined();
-            expect(deletedOrder?.status).toBeDefined();
             expect(deletedOrder?.id).toBe(addedOrder.id);
             expect(deletedOrder?.status).toBe(addedOrder.status);
             expect(deletedOrder?.userId).toBeUndefined();
@@ -143,9 +130,6 @@ describe('Postgres Order Repository Tests', (): void => {
             const returnedOrder = await OrdersRepository.getById((addedOrder.id as number));
 
             expect(returnedOrder).toBeDefined();
-            expect(returnedOrder?.id).toBeDefined();
-            expect(returnedOrder?.status).toBeDefined();
-            expect(returnedOrder?.userId).toBeDefined();
             expect(returnedOrder?.id).toBe(addedOrder.id);
             expect(returnedOrder?.status).toBe(addedOrder.status);
             expect(returnedOrder?.userId).toBe(addedOrder.userId);
@@ -157,8 +141,6 @@ describe('Postgres Order Repository Tests', (): void => {
             const returnedOrder = await OrdersRepository.getById((addedOrder.id as number),{protected:true});
 
             expect(returnedOrder).toBeDefined();
-            expect(returnedOrder?.id).toBeDefined();
-            expect(returnedOrder?.status).toBeDefined();
             expect(returnedOrder?.id).toBe(addedOrder.id);
             expect(returnedOrder?.status).toBe(addedOrder.status);
             expect(returnedOrder?.userId).toBeUndefined();
@@ -187,9 +169,6 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(orders.length).toBe(2);
             expect(orders[0]).toBeDefined();
             expect(orders[1]).toBeDefined();
-            expect(orders[0].id).toBeDefined();
-            expect(orders[0].status).toBeDefined();
-            expect(orders[0].userId).toBeDefined();
             expect(orders[0].id).not.toBe(orders[1].id);
             expect(orders[0].status).not.toBe(orders[1].status);
             expect(orders[0].userId).toBe(orders[1].userId);
@@ -208,11 +187,9 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(orders.length).toBe(2);
             expect(orders[0]).toBeDefined();
             expect(orders[1]).toBeDefined();
-            expect(orders[0].id).toBeDefined();
-            expect(orders[0].status).toBeDefined();
-            expect(orders[0].userId).toBeUndefined();
             expect(orders[0].id).not.toBe(orders[1].id);
             expect(orders[0].status).not.toBe(orders[1].status);
+            expect(orders[0].userId).toBeUndefined();
         });
     });
 
@@ -224,9 +201,6 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(deletedOrders).toBeDefined();
             expect(deletedOrders.length).toBe(1);
-            expect(deletedOrders[0].id).toBeDefined();
-            expect(deletedOrders[0].status).toBeDefined();
-            expect(deletedOrders[0].userId).toBeDefined();
             expect(deletedOrders[0].id).toBe(addedOrder.id);
             expect(deletedOrders[0].status).toBe(addedOrder.status);
             expect(deletedOrders[0].userId).toBe(addedOrder.userId);
@@ -239,11 +213,9 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(deletedOrders).toBeDefined();
             expect(deletedOrders.length).toBe(1);
-            expect(deletedOrders[0].id).toBeDefined();
-            expect(deletedOrders[0].status).toBeDefined();
-            expect(deletedOrders[0].userId).toBeUndefined();
             expect(deletedOrders[0].id).toBe(addedOrder.id);
             expect(deletedOrders[0].status).toBe(addedOrder.status);
+            expect(deletedOrders[0].userId).toBeUndefined();
         });
     });
 
@@ -262,7 +234,6 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(returnedOrders[1]).toBeDefined();
             expect(returnedOrders[0].id).toBeDefined();
             expect(returnedOrders[0].status).toBeDefined();
-            expect(returnedOrders[0].userId).toBeDefined();
             expect(returnedOrders[0].userId).toBe(returnedOrders[1].userId);
         });
 
@@ -296,8 +267,6 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(activeOrder).toBeDefined();
             expect(activeOrder?.id).toBeDefined();
-            expect(activeOrder?.status).toBeDefined();
-            expect(activeOrder?.userId).toBeDefined();
             expect(activeOrder?.status).toBe(OrderStatus.Active);
             expect(activeOrder?.userId).toBe(addedUser.id);
         });
@@ -308,8 +277,6 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(activeOrder).toBeDefined();
             expect(activeOrder?.id).toBeDefined();
-            expect(activeOrder?.status).toBeDefined();
-            expect(activeOrder?.userId).toBeDefined();
             expect(activeOrder?.status).toBe(OrderStatus.Active);
             expect(activeOrder?.userId).toBe(addedUser.id);
         });
@@ -320,9 +287,8 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(activeOrder).toBeDefined();
             expect(activeOrder?.id).toBeDefined();
-            expect(activeOrder?.status).toBeDefined();
-            expect(activeOrder?.userId).toBeUndefined();
             expect(activeOrder?.status).toBe(OrderStatus.Active);
+            expect(activeOrder?.userId).toBeUndefined();
         });
     });
 
@@ -334,8 +300,6 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(returnedOrder).toBeDefined();
             expect(returnedOrder?.id).toBeDefined();
-            expect(returnedOrder?.status).toBeDefined();
-            expect(returnedOrder?.userId).toBeDefined();
             expect(returnedOrder?.status).toBe(OrderStatus.Active);
             expect(returnedOrder?.userId).toBe(addedUser.id);
         });
@@ -347,9 +311,8 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(returnedOrder).toBeDefined();
             expect(returnedOrder?.id).toBeDefined();
-            expect(returnedOrder?.status).toBeDefined();
-            expect(returnedOrder?.userId).toBeUndefined();
             expect(returnedOrder?.status).toBe(OrderStatus.Active);
+            expect(returnedOrder?.userId).toBeUndefined();
         });
     });
 
@@ -361,8 +324,6 @@ describe('Postgres Order Repository Tests', (): void => {
             const orderProduct = await OrdersRepository.addProductToOrder?.(2,(addedOrder.id as number),(returnedProducts[0].id as string));
 
             expect(orderProduct).toBeDefined();
-            expect(orderProduct?.name).toBeDefined();
-            expect(orderProduct?.price).toBeDefined();
             expect(orderProduct?.name).toBe(returnedProducts[0].name);
             expect(orderProduct?.price).toBe(returnedProducts[0].price);
             expect(orderProduct?.quantity).toBe(2);
@@ -378,8 +339,6 @@ describe('Postgres Order Repository Tests', (): void => {
             const removedOrderProduct = await OrdersRepository.removeProductFromOrder?.((addedOrder.id as number),(returnedProducts[0].id as string));
 
             expect(removedOrderProduct).toBeDefined();
-            expect(removedOrderProduct?.name).toBeDefined();
-            expect(removedOrderProduct?.price).toBeDefined();
             expect(removedOrderProduct?.name).toBe(returnedProducts[0].name);
             expect(removedOrderProduct?.price).toBe(returnedProducts[0].price);
             expect(removedOrderProduct?.quantity).toBe(2);
@@ -397,13 +356,10 @@ describe('Postgres Order Repository Tests', (): void => {
 
             expect(orderProducts).toBeDefined();
             expect(orderProducts?.length).toBe(2);
-            expect(orderProducts?.[0].name).toBeDefined();
-            expect(orderProducts?.[0].price).toBeDefined();
-            expect(orderProducts?.[0].quantity).toBeDefined();
-            expect(orderProducts?.[0].quantity).toBe(2);
-            expect(orderProducts?.[1].quantity).toBe(1);
             expect(orderProducts?.[0].name).toBe(returnedProducts?.[0].name);
             expect(orderProducts?.[0].price).toBe(returnedProducts?.[0].price);
+            expect(orderProducts?.[0].quantity).toBe(2);
+            expect(orderProducts?.[1].quantity).toBe(1);
         });
     });
 
@@ -419,8 +375,6 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(deletedOrders?.[0]).toBeDefined();
             expect(deletedOrders?.[1]).toBeDefined();
             expect(deletedOrders?.[0].id).toBeDefined();
-            expect(deletedOrders?.[0].status).toBeDefined();
-            expect(deletedOrders?.[0].userId).toBeDefined();
             expect(deletedOrders?.[0].status).toBe(OrderStatus.Active);
             expect(deletedOrders?.[0].userId).toBe(addedUser.id);
         });
@@ -436,9 +390,8 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(deletedOrders?.[0]).toBeDefined();
             expect(deletedOrders?.[1]).toBeDefined();
             expect(deletedOrders?.[0].id).toBeDefined();
-            expect(deletedOrders?.[0].status).toBeDefined();
-            expect(deletedOrders?.[0].userId).toBeUndefined();
             expect(deletedOrders?.[0].status).toBe(OrderStatus.Active);
+            expect(deletedOrders?.[0].userId).toBeUndefined();
         });
     });
 
@@ -455,9 +408,6 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(deletedProducts?.length).toBe(2);
             expect(deletedProducts[0]).toBeDefined();
             expect(deletedProducts[1]).toBeDefined();
-            expect(deletedProducts[0].name).toBeDefined();
-            expect(deletedProducts[0].price).toBeDefined();
-            expect(deletedProducts[0].quantity).toBeDefined();
             expect(deletedProducts[0].name).toBe(returnedProducts[0].name);
             expect(deletedProducts[0].price).toBe(returnedProducts[0].price);
             expect(deletedProducts[0].quantity).toBe(2);
@@ -476,9 +426,6 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(orderProducts).toBeDefined();
             expect(orderProducts?.length).toBe(2);
             expect(orderProducts[0].id).toBeDefined();
-            expect(orderProducts[0].quantity).toBeDefined();
-            expect(orderProducts[0].orderId).toBeDefined();
-            expect(orderProducts[0].productId).toBeDefined();
             expect(orderProducts[0].quantity).toBe(2);
             expect(Number(orderProducts[0].orderId)).toBe((addedOrder.id as number));
             expect(orderProducts[0].productId).toBe((returnedProducts[0].id as string));
@@ -497,9 +444,6 @@ describe('Postgres Order Repository Tests', (): void => {
             expect(deletedOrderProducts).toBeDefined();
             expect(deletedOrderProducts?.length).toBe(2);
             expect(deletedOrderProducts[0].id).toBeDefined();
-            expect(deletedOrderProducts[0].quantity).toBeDefined();
-            expect(deletedOrderProducts[0].orderId).toBeDefined();
-            expect(deletedOrderProducts[0].productId).toBeDefined();
             expect(deletedOrderProducts[0].quantity).toBe(2);
             expect(Number(deletedOrderProducts[0].orderId)).toBe((addedOrder.id as number));
             expect(deletedOrderProducts[0].productId).toBe((returnedProducts[0].id as string));

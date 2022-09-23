@@ -7,7 +7,7 @@ import {UsersRepository} from '../../../../../src/frameworks/repositories/postgr
 describe('Postgres User Repository Tests', (): void => {
     let testUser: User;
 
-    beforeEach((): void => {
+    beforeAll((): void => {
         testUser = {
             firstName: 'Billy',
             lastName: 'Bob',
@@ -28,11 +28,6 @@ describe('Postgres User Repository Tests', (): void => {
 
             expect(addedUser).toBeDefined();
             expect(addedUser.id).toBeDefined();
-            expect(addedUser.firstName).toBeDefined();
-            expect(addedUser.lastName).toBeDefined();
-            expect(addedUser.username).toBeDefined();
-            expect(addedUser.password).toBeDefined();
-            expect(addedUser.level).toBeDefined();
             expect(addedUser.firstName).toBe(testUser.firstName);
             expect(addedUser.lastName).toBe(testUser.lastName);
             expect(addedUser.username).toBe(testUser.username);
@@ -45,10 +40,6 @@ describe('Postgres User Repository Tests', (): void => {
 
             expect(addedUser).toBeDefined();
             expect(addedUser.id).toBeUndefined();
-            expect(addedUser.firstName).toBeDefined();
-            expect(addedUser.lastName).toBeDefined();
-            expect(addedUser.username).toBeDefined();
-            expect(addedUser.password).toBeDefined();
             expect(addedUser.firstName).toBe(testUser.firstName);
             expect(addedUser.lastName).toBe(testUser.lastName);
             expect(addedUser.username).toBe(testUser.username);
@@ -120,12 +111,6 @@ describe('Postgres User Repository Tests', (): void => {
             const deletedUser = await UsersRepository.delete(addedUser) as User;
 
             expect(deletedUser).toBeDefined();
-            expect(deletedUser.id).toBeDefined();
-            expect(deletedUser.firstName).toBeDefined();
-            expect(deletedUser.lastName).toBeDefined();
-            expect(deletedUser.username).toBeDefined();
-            expect(deletedUser.password).toBeDefined();
-            expect(deletedUser.level).toBeDefined();
             expect(deletedUser.id).toBe(addedUser.id);
             expect(deletedUser.firstName).toBe(addedUser.firstName);
             expect(deletedUser.lastName).toBe(addedUser.lastName);
@@ -140,10 +125,6 @@ describe('Postgres User Repository Tests', (): void => {
 
             expect(deletedUser).toBeDefined();
             expect(deletedUser.id).toBeUndefined();
-            expect(deletedUser.firstName).toBeDefined();
-            expect(deletedUser.lastName).toBeDefined();
-            expect(deletedUser.username).toBeDefined();
-            expect(deletedUser.password).toBeDefined();
             expect(deletedUser.firstName).toBe(addedUser.firstName);
             expect(deletedUser.lastName).toBe(addedUser.lastName);
             expect(deletedUser.username).toBe(addedUser.username);
@@ -164,12 +145,6 @@ describe('Postgres User Repository Tests', (): void => {
             const returnedUser = await UsersRepository.getById((addedUser.id as string)) as User;
 
             expect(returnedUser).toBeDefined();
-            expect(returnedUser.id).toBeDefined();
-            expect(returnedUser.firstName).toBeDefined();
-            expect(returnedUser.lastName).toBeDefined();
-            expect(returnedUser.username).toBeDefined();
-            expect(returnedUser.password).toBeDefined();
-            expect(returnedUser.level).toBeDefined();
             expect(returnedUser.id).toBe(addedUser.id);
             expect(returnedUser.firstName).toBe(addedUser.firstName);
             expect(returnedUser.lastName).toBe(addedUser.lastName);
@@ -184,10 +159,6 @@ describe('Postgres User Repository Tests', (): void => {
 
             expect(returnedUser).toBeDefined();
             expect(returnedUser.id).toBeUndefined();
-            expect(returnedUser.firstName).toBeDefined();
-            expect(returnedUser.lastName).toBeDefined();
-            expect(returnedUser.username).toBeDefined();
-            expect(returnedUser.password).toBeDefined();
             expect(returnedUser.firstName).toBe(addedUser.firstName);
             expect(returnedUser.lastName).toBe(addedUser.lastName);
             expect(returnedUser.username).toBe(addedUser.username);
@@ -206,15 +177,9 @@ describe('Postgres User Repository Tests', (): void => {
     describe('getByUsername() Tests', (): void => {
         it('Getting user by username should return user', async (): Promise<void> => {
             const addedUser = await UsersRepository.add(testUser);
-            const returnedUser = await UsersRepository.getUserByUsername?.(addedUser.username) as User;
+            const returnedUser = await UsersRepository.getUserByUsername?.((addedUser.username as string)) as User;
 
             expect(returnedUser).toBeDefined();
-            expect(returnedUser.id).toBeDefined();
-            expect(returnedUser.firstName).toBeDefined();
-            expect(returnedUser.lastName).toBeDefined();
-            expect(returnedUser.username).toBeDefined();
-            expect(returnedUser.password).toBeDefined();
-            expect(returnedUser.level).toBeDefined();
             expect(returnedUser.id).toBe(addedUser.id);
             expect(returnedUser.firstName).toBe(addedUser.firstName);
             expect(returnedUser.lastName).toBe(addedUser.lastName);
@@ -225,14 +190,10 @@ describe('Postgres User Repository Tests', (): void => {
 
         it('Getting user by username with protected option should return partial user', async (): Promise<void> => {
             const addedUser = await UsersRepository.add(testUser);
-            const returnedUser = await UsersRepository.getUserByUsername?.(addedUser.username, {protected:true}) as User;
+            const returnedUser = await UsersRepository.getUserByUsername?.((addedUser.username as string), {protected:true}) as User;
 
             expect(returnedUser).toBeDefined();
             expect(returnedUser.id).toBeUndefined();
-            expect(returnedUser.firstName).toBeDefined();
-            expect(returnedUser.lastName).toBeDefined();
-            expect(returnedUser.username).toBeDefined();
-            expect(returnedUser.password).toBeDefined();
             expect(returnedUser.firstName).toBe(addedUser.firstName);
             expect(returnedUser.lastName).toBe(addedUser.lastName);
             expect(returnedUser.username).toBe(addedUser.username);
@@ -243,7 +204,6 @@ describe('Postgres User Repository Tests', (): void => {
         it('Getting user by invalid username should return null', async (): Promise<void> => {
             await UsersRepository.add(testUser);
             const returnedUser = await UsersRepository.getUserByUsername?.('invalid_username');
-
             expect(returnedUser).toBeNull();
         });
     });
@@ -265,10 +225,6 @@ describe('Postgres User Repository Tests', (): void => {
             expect(users).toBeDefined();
             expect(users.length).toBe(1);
             expect(users[0].id).toBeUndefined();
-            expect(users[0].firstName).toBeDefined();
-            expect(users[0].lastName).toBeDefined();
-            expect(users[0].username).toBeDefined();
-            expect(users[0].password).toBeDefined();
             expect(users[0].firstName).toBe(addedUser.firstName);
             expect(users[0].lastName).toBe(addedUser.lastName);
             expect(users[0].username).toBe(addedUser.username);
@@ -294,10 +250,6 @@ describe('Postgres User Repository Tests', (): void => {
             expect(users).toBeDefined();
             expect(users.length).toBe(1);
             expect(users[0].id).toBeUndefined();
-            expect(users[0].firstName).toBeDefined();
-            expect(users[0].lastName).toBeDefined();
-            expect(users[0].username).toBeDefined();
-            expect(users[0].password).toBeDefined();
             expect(users[0].firstName).toBe(addedUser.firstName);
             expect(users[0].lastName).toBe(addedUser.lastName);
             expect(users[0].username).toBe(addedUser.username);
@@ -309,15 +261,13 @@ describe('Postgres User Repository Tests', (): void => {
     describe('authenticate() Tests', (): void => {
         it('Authenticated user should be returned', async (): Promise<void> => {
             const addedUser = await UsersRepository.add(testUser);
-            const returnedUser = await UsersRepository.authenticate?.(addedUser.username,(addedUser.password as string));
-
+            const returnedUser = await UsersRepository.authenticate?.((addedUser.username as string),(addedUser.password as string));
             expect(returnedUser).toBeDefined();
         });
 
         it('Authenticated user with invalid password should return null', async (): Promise<void> => {
             const addedUser = await UsersRepository.add(testUser);
-            const returnedUser = await UsersRepository.authenticate?.(addedUser.username,'invalid_password');
-
+            const returnedUser = await UsersRepository.authenticate?.((addedUser.username as string),'invalid_password');
             expect(returnedUser).toBeNull();
         });
     });
@@ -330,8 +280,6 @@ describe('Postgres User Repository Tests', (): void => {
 
             expect(addedSession).toBeDefined();
             expect(addedSession?.id).toBeDefined();
-            expect(addedSession?.secret).toBeDefined();
-            expect(addedSession?.userId).toBeDefined();
             expect(addedSession?.secret).toBe(secret);
             expect(addedSession?.userId).toBe(addedUser.id);
         });
@@ -344,9 +292,6 @@ describe('Postgres User Repository Tests', (): void => {
             const deletedSession = await UsersRepository.deleteSession?.((addedSession?.secret as string),(addedSession?.userId as string));
 
             expect(deletedSession).toBeDefined();
-            expect(deletedSession?.id).toBeDefined();
-            expect(deletedSession?.secret).toBeDefined();
-            expect(deletedSession?.userId).toBeDefined();
             expect(deletedSession?.id).toBe(addedSession?.id);
             expect(deletedSession?.secret).toBe(addedSession?.secret);
             expect(deletedSession?.userId).toBe(addedSession?.userId);
@@ -356,7 +301,6 @@ describe('Postgres User Repository Tests', (): void => {
             const addedUser = await UsersRepository.add(testUser);
             const addedSession = await UsersRepository.addSession?.(uuid(),(addedUser.id as string));
             const deletedSession = await UsersRepository.deleteSession?.('invalid_secret',(addedSession?.userId as string));
-
             expect(deletedSession).toBeNull();
         });
     });
@@ -368,9 +312,6 @@ describe('Postgres User Repository Tests', (): void => {
             const returnedSession = await UsersRepository.getSession?.((addedSession?.id as number));
 
             expect(returnedSession).toBeDefined();
-            expect(returnedSession?.id).toBeDefined();
-            expect(returnedSession?.secret).toBeDefined();
-            expect(returnedSession?.userId).toBeDefined();
             expect(returnedSession?.id).toBe(addedSession?.id);
             expect(returnedSession?.secret).toBe(addedSession?.secret);
             expect(returnedSession?.userId).toBe(addedSession?.userId);
@@ -392,9 +333,6 @@ describe('Postgres User Repository Tests', (): void => {
             const returnedSession = await UsersRepository.getSessionForUser?.((addedUser.id as string));
 
             expect(returnedSession).toBeDefined();
-            expect(returnedSession?.id).toBeDefined();
-            expect(returnedSession?.secret).toBeDefined();
-            expect(returnedSession?.userId).toBeDefined();
             expect(returnedSession?.id).toBe(addedSession?.id);
             expect(returnedSession?.secret).toBe(addedSession?.secret);
             expect(returnedSession?.userId).toBe(addedSession?.userId);
@@ -404,7 +342,6 @@ describe('Postgres User Repository Tests', (): void => {
             const addedUser = await UsersRepository.add(testUser);
             await UsersRepository.addSession?.(uuid(),(addedUser.id as string));
             const returnedSession = await UsersRepository.getSessionForUser?.(uuid());
-
             expect(returnedSession).toBeNull();
         });
     });
