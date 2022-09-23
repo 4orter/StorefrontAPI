@@ -10,7 +10,10 @@
     "build": "npx tsc",
     "start": "nodemon index.ts --ignore src/**/*.json",
     "jasmine": "jasmine",
-    "test": "ENV=test node node_modules/db-migrate/bin/db-migrate --env test up && npm run build && npm run jasmine && node node_modules/db-migrate/bin/db-migrate --env test reset"
+    "test:setup": "node node_modules/db-migrate/bin/db-migrate --env test up && npm run build",
+    "test:teardown": "node node_modules/db-migrate/bin/db-migrate --env test reset",
+    "test": "ENV=test npm run test:setup && npm run jasmine && npm run test:teardown"
+
   },
   "repository": {
     "type": "git",
