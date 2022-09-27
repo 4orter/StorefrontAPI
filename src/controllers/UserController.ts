@@ -60,13 +60,12 @@ const UserController = (dependencies: Dependable<User>): {
             const {
                 id,
                 username,
-                password,
                 firstName,
                 lastName,
                 level
             } = request.body as User;
 
-            const updatedUser = await useCase.update(dependencies).execute({id,username,password,firstName,lastName,level});
+            const updatedUser = await useCase.update(dependencies).execute({id,username,firstName,lastName,level});
             if (!updatedUser) throw generateServerError('updating user');
 
             response.json(generateOKResponse(updatedUser));

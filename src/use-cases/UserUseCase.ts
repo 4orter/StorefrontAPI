@@ -56,7 +56,6 @@ const UserUseCase: BusinessUsable<User> = {
             const schema = Joi.object({
                 id: Joi.string().guid({version:'uuidv4'}).required(),
                 username: Joi.string().required(),
-                password: Joi.string().required(),
                 firstName: Joi.string().required(),
                 lastName: Joi.string().required(),
                 level: Joi.number().min(0).max(1).required()

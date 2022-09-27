@@ -18,12 +18,12 @@ const CustomerServiceRouter = (dependencies: Configuration): express.Router => {
     router.route('/cart/remove-item/:productId').delete(controller.removeItemFromCart);
     router.route('/checkout').put(controller.checkout);
 
-    router.route('/store/products').get(controller.getProducts);
-    router.route('/store/products/:productId').get(controller.getProductById);
-    router.route('/store/products/:productId/add-to-cart').post(controller.addItemToCart);
+    router.route('/products').get(controller.getProducts);
+    router.route('/products/:productId').get(controller.getProductById);
+    router.route('/products/:productId/add-to-cart').post(controller.addItemToCart);
 
-    router.route('/store/categories').get(controller.getProductCategories);
-    router.route('/store/categories/:categoryId').get(controller.getProductsByCategory);
+    router.route('/categories').get(controller.getProductCategories);
+    router.route('/categories/:categoryId').get(controller.getProductsByCategory);
 
     return router;
 };

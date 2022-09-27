@@ -10,6 +10,13 @@ import OrdersRouter from './OrdersRouter';
 const routes = (dependencies: Configuration): express.Router => {
     const router = express.Router();
 
+    router.use('/', [
+        AuthServiceRouter({
+            repository: dependencies.repositories.UsersRepository,
+            useCase: dependencies.useCases.UserUseCase
+        })
+    ]);
+
     router.use('/users', [
         Token(UserLevel.Admin, {
             repository: dependencies.repositories.UsersRepository,
@@ -33,27 +40,23 @@ const routes = (dependencies: Configuration): express.Router => {
     ]);
 
     router.use('/products',
+        Token(UserLevel.Admin, {
+            repository: dependencies.repositories.UsersRepository,
+            useCase: dependencies.useCases.UserUseCase
+        }).policy,
         ProductsRouter({
             repository: dependencies.repositories.ProductsRepository,
             useCase: dependencies.useCases.ProductUseCase
         })
     );
 
-    router.use('/', [
-        AuthServiceRouter({
-            repository: dependencies.repositories.UsersRepository,
-            useCase: dependencies.useCases.UserUseCase
-        }),
+    router.use('/store', [
         Token(UserLevel.Customer, {
             repository: dependencies.repositories.UsersRepository,
             useCase: dependencies.useCases.UserUseCase
         }).policy,
         CustomerServiceRouter(dependencies)
     ]);
-
-
-
-
 
     return router;
 };

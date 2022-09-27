@@ -1,9 +1,10 @@
-import brcypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import vars from '../../../config/vars';
 import {User} from '../../../entities';
 import {DataStorable} from '../../../entities/protocols';
 import {PostgresDatabase} from '../../databases/postgres';
 import {UserSession} from '../../../entities/auxiliary';
+import {QueryResult} from 'pg';
 
 const selectClause = 'SELECT id, username, password_digest AS "password", first_name AS "firstName", last_name AS "lastName", level';
 const returningClause = 'RETURNING id, username, password_digest AS "password", first_name AS "firstName", last_name AS "lastName", level';
@@ -21,7 +22,7 @@ const UsersRepository: DataStorable<User> = {
         const {username,firstName,lastName,level} = user;
         try {
             const conn = await PostgresDatabase.connect();
-            const hash = brcypt.hashSync(user.password + vars.bcryptSecret, vars.bcryptRounds);
+            const hash = bcrypt.hashSync(user.password + vars.bcryptSecret, vars.bcryptRounds);
             const result = await conn.query(
                 `INSERT INTO users (username, password_digest, first_name, last_name, level) VALUES ($1, $2, $3, $4, $5) ${returningClause}`,
                 [username,hash,firstName,lastName,level]
@@ -39,11 +40,11 @@ const UsersRepository: DataStorable<User> = {
         const {id,username,firstName,lastName} = user;
         try {
             const conn = await PostgresDatabase.connect();
-            const hash = brcypt.hashSync(user.password + vars.bcryptSecret, vars.bcryptRounds);
             const result = await conn.query(
-                `UPDATE users SET username = ($1), password_digest = ($2), first_name = ($3), last_name = ($4) WHERE id = ($5) ${returningClause}`,
-                [username,hash,firstName,lastName,id]
+                `UPDATE users SET username = ($1), first_name = ($2), last_name = ($3) WHERE id = ($4) ${returningClause}`,
+                [username,firstName,lastName,id]
             );
+
             conn.release();
 
             if (!result.rows.length) return null;
@@ -147,7 +148,7 @@ const UsersRepository: DataStorable<User> = {
 
             if (result.rows.length) {
                 const user = result.rows[0] as User;
-                if (brcypt.compareSync(password + vars.bcryptSecret, (user.password || ''))) {
+                if (bcrypt.compareSync(password + vars.bcryptSecret, (user.password as string))) {
                     return user;
                 }
                 return null;
