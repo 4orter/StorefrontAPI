@@ -86,9 +86,8 @@ describe('User Use-Case Tests', (): void => {
                 const updatedUser = await UserUseCase.update(dependencies).execute({
                     id:addedUser.id,
                     username:addedUser.username,
-                    password:testUser.password,
                     firstName:'George',
-                    lastName:testUser.lastName,
+                    lastName:addedUser.lastName,
                     level:addedUser.level
                 });
 
@@ -106,9 +105,8 @@ describe('User Use-Case Tests', (): void => {
                 const updatedUser = await UserUseCase.update(dependencies).execute({
                     id:addedUser.id,
                     username:addedUser.username,
-                    password:testUser.password,
                     firstName:'George',
-                    lastName:testUser.lastName,
+                    lastName:addedUser.lastName,
                     level:addedUser.level
                 },{protected:true});
 
@@ -137,16 +135,6 @@ describe('User Use-Case Tests', (): void => {
                 await expectAsync(UserUseCase.update(dependencies).execute({
                     id: uuid(),
                     password:testUser.password,
-                    firstName:testUser.firstName,
-                    lastName:testUser.lastName,
-                    level:testUser.level
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when user updated without password', async (): Promise<void> => {
-                await expectAsync(UserUseCase.update(dependencies).execute({
-                    id: uuid(),
-                    username:testUser.username,
                     firstName:testUser.firstName,
                     lastName:testUser.lastName,
                     level:testUser.level

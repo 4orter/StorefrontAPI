@@ -7,7 +7,7 @@ describe('Postgres Order Repository Tests', (): void => {
     let testOrder: Order;
     let testUser: User;
 
-    beforeAll((): void => {
+    beforeAll(async (): Promise<void> => {
         testOrder = {
             status: OrderStatus.Active
         };
@@ -15,6 +15,22 @@ describe('Postgres Order Repository Tests', (): void => {
             username: '@testUser',
             password: 'password123'
         };
+
+        await ProductsRepository.add({
+            name: 'Soap Bar',
+            description: 'Very nice soap!',
+            price: 5.99
+        });
+
+        await ProductsRepository.add({
+            name: 'Aluminum Foil',
+            description: 'Use it to cook anything!',
+            price: 2.73
+        });
+    });
+
+    afterAll(async (): Promise<void> => {
+        await ProductsRepository.deleteAll?.();
     });
 
     afterEach(async (): Promise<void> => {
