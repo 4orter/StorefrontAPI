@@ -26,13 +26,12 @@ const ProductController = (dependencies: Dependable<Product>): {
 
         try {
             const {
-                id,
                 name,
                 description,
                 price,
             } = request.body as Product;
 
-            const addedProduct = await useCase.add(dependencies).execute({id,name,description,price});
+            const addedProduct = await useCase.add(dependencies).execute({name,description,price});
 
             response.json(generateOKResponse(addedProduct));
         } catch (error) {
@@ -84,14 +83,9 @@ const ProductController = (dependencies: Dependable<Product>): {
         }
 
         try {
-            const {
-                id,
-                name,
-                description,
-                price
-            } = request.body as Product;
+            const id = request.params.id as string;
 
-            const deletedProduct = await useCase.delete(dependencies).execute({id,name,description,price});
+            const deletedProduct = await useCase.delete(dependencies).execute(id);
             if (!deletedProduct) throw generateServerError('deleting product');
 
             response.json(generateOKResponse(deletedProduct));

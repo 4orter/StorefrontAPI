@@ -27,7 +27,6 @@ const UserController = (dependencies: Dependable<User>): {
 
         try {
             const {
-                id,
                 username,
                 password,
                 firstName,
@@ -35,7 +34,7 @@ const UserController = (dependencies: Dependable<User>): {
                 level
             } = request.body as User;
 
-            const addedUser = await useCase.add(dependencies).execute({id,username,password,firstName,lastName,level});
+            const addedUser = await useCase.add(dependencies).execute({username,password,firstName,lastName,level});
 
             response.json(generateOKResponse(addedUser));
         } catch (error) {
@@ -88,16 +87,9 @@ const UserController = (dependencies: Dependable<User>): {
         }
 
         try {
-            const {
-                id,
-                username,
-                password,
-                firstName,
-                lastName,
-                level
-            } = request.body as User;
+            const id = request.params.id as string;
 
-            const deletedUser = await useCase.delete(dependencies).execute({id,username,password,firstName,lastName,level});
+            const deletedUser = await useCase.delete(dependencies).execute(id);
             if (!deletedUser) throw generateServerError('deleting user');
 
             response.json(generateOKResponse(deletedUser));

@@ -26,12 +26,11 @@ const OrderController = (dependencies: Dependable<Order>): {
 
         try {
             const {
-                id,
                 status,
                 userId,
             } = request.body as Order;
 
-            const addedOrder = await useCase.add(dependencies).execute({id,status,userId});
+            const addedOrder = await useCase.add(dependencies).execute({status,userId});
 
             response.json(generateOKResponse(addedOrder));
         } catch (error) {
@@ -82,13 +81,9 @@ const OrderController = (dependencies: Dependable<Order>): {
         }
 
         try {
-            const {
-                id,
-                status,
-                userId,
-            } = request.body as Order;
+            const id = request.params.id as string;
 
-            const deletedOrder = await useCase.delete(dependencies).execute({id,status,userId});
+            const deletedOrder = await useCase.delete(dependencies).execute(id);
             if (!deletedOrder) throw generateServerError('deleting order');
 
             response.json(generateOKResponse(deletedOrder));

@@ -75,7 +75,6 @@ const CustomerServiceController = (dependencies: Configuration): {
                 username,
                 firstName,
                 lastName,
-                password
             } = request.body as User;
 
             if (!(useCase.deleteSession && useCase.addSession)) throw generateServerError('updating user session');
@@ -84,7 +83,7 @@ const CustomerServiceController = (dependencies: Configuration): {
             const user = checkToken(TokenType.Refresh, sessionToken) as User;
 
             const updatedUser = await useCase.update(userDependencies).execute({
-                id:user.id,username,password,firstName,lastName,level:user.level
+                id:user.id,username,firstName,lastName,level:user.level
             }, {protected:true}) as User;
 
             await useCase.deleteSession(userDependencies).execute(sessionToken,(user.id as string));
@@ -150,8 +149,8 @@ const CustomerServiceController = (dependencies: Configuration): {
 
             const sessionToken = request.cookies[TokenType.Refresh] as string;
             const user = checkToken(TokenType.Refresh, sessionToken) as User;
-            await userUseCase.delete(userDependencies).execute(user);
             await userUseCase.deleteSession(userDependencies).execute(sessionToken,(user.id as string));
+            await userUseCase.delete(userDependencies).execute((user.id as string));
 
             const orders = await orderUseCase.deleteAllOrdersForUser(orderDependencies).execute((user.id as string));
             if (orders) {
@@ -453,8 +452,8 @@ const CustomerServiceController = (dependencies: Configuration): {
         try {
             if (!useCase.getProductsByCategory) throw generateServerError('getting product categories');
 
-            const categoryId = request.body.categoryId as number;
-            const products = await useCase.getProductsByCategory(productDependencies).execute(categoryId);
+            const categoryId = (request.params.categoryId as unknown) as number;
+            const products = await useCase.getProductsByCategory(productDependencies).execute(categoryId,{protected:true});
 
             response.json(generateOKResponse(
                 products.length ?
