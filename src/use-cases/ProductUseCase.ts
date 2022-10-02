@@ -16,7 +16,7 @@ const ProductUseCase: BusinessUsable<Product> = {
         const getValidationErrors = (product: Product): ValidationError | null=> {
             const schema = Joi.object({
                 name: Joi.string().required(),
-                description: Joi.string(),
+                description: Joi.string().optional(),
                 price: Joi.number().required(),
                 categoryId: Joi.any().optional()
             });
@@ -54,7 +54,7 @@ const ProductUseCase: BusinessUsable<Product> = {
             const schema = Joi.object({
                 id: Joi.string().guid({version:'uuidv4'}).required(),
                 name: Joi.string().required(),
-                description: Joi.string(),
+                description: Joi.string().optional(),
                 price: Joi.number().required(),
                 categoryId: Joi.any().optional()
             });

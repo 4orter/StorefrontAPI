@@ -15,7 +15,7 @@ const OrderUseCase: BusinessUsable<Order> = {
 
         const getValidationErrors = (order: Order): ValidationError | null => {
             const schema = Joi.object({
-                status: Joi.string().alphanum().length(1).required(),
+                status: Joi.string().length(1).regex(/[ai]/).required(),
                 userId: Joi.string().guid({version:'uuidv4'}).required()
             });
 
@@ -51,7 +51,7 @@ const OrderUseCase: BusinessUsable<Order> = {
         const getValidationErrors = (order: Order): ValidationError | null => {
             const schema = Joi.object({
                 id: Joi.number().required(),
-                status: Joi.string().alphanum().length(1).required(),
+                status: Joi.string().length(1).regex(/[ai]/).required(),
                 userId: Joi.string().guid({version:'uuidv4'}).required()
             });
 
