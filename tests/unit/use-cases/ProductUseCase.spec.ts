@@ -8,7 +8,7 @@ describe('Product Use-Case Tests', (): void => {
     let testProduct: Product;
     let dependencies: Dependable<Product>;
 
-    beforeAll(() => {
+    beforeAll((): void => {
         testProduct = {
             name: 'My Product',
             description: 'My product\'s description',
@@ -134,7 +134,7 @@ describe('Product Use-Case Tests', (): void => {
         describe('Functionality Tests', (): void => {
             it('Product should be returned when deleted', async (): Promise<void> => {
                 const addedProduct = await ProductUseCase.add(dependencies).execute(testProduct);
-                const deletedUser = await ProductUseCase.delete(dependencies).execute(addedProduct);
+                const deletedUser = await ProductUseCase.delete(dependencies).execute((addedProduct.id as string));
 
                 expect(deletedUser).toBeDefined();
                 expect(deletedUser?.id).toBeDefined();
@@ -145,7 +145,7 @@ describe('Product Use-Case Tests', (): void => {
 
             it('Partial product should be returned when deleted with protected option', async (): Promise<void> => {
                 const addedProduct = await ProductUseCase.add(dependencies).execute(testProduct);
-                const deletedUser = await ProductUseCase.delete(dependencies).execute(addedProduct,{protected:true});
+                const deletedUser = await ProductUseCase.delete(dependencies).execute((addedProduct.id as string),{protected:true});
 
                 expect(deletedUser).toBeDefined();
                 expect(deletedUser?.id).toBeUndefined();
@@ -157,29 +157,7 @@ describe('Product Use-Case Tests', (): void => {
 
         describe('Validation Tests', (): void => {
             it('Promise should be rejected when product deleted without id', async (): Promise<void> => {
-                await expectAsync(ProductUseCase.delete(dependencies).execute({
-                    name:testProduct.name,
-                    description:testProduct.description,
-                    price:testProduct.price
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when product deleted without name', async (): Promise<void> => {
-                await expectAsync(ProductUseCase.delete(dependencies).execute({
-                    id: uuid(),
-                    name:((null as unknown) as string),
-                    description:testProduct.description,
-                    price:testProduct.price
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when product deleted without price', async (): Promise<void> => {
-                await expectAsync(ProductUseCase.delete(dependencies).execute({
-                    id: uuid(),
-                    name:testProduct.name,
-                    description:testProduct.description,
-                    price:((null as unknown) as number)
-                })).toBeRejected();
+                await expectAsync(ProductUseCase.delete(dependencies).execute(((null as unknown) as string))).toBeRejected();
             });
         });
     });

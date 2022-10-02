@@ -10,7 +10,7 @@ describe('User Use-Case Tests', (): void => {
     let testUser: User;
     let dependencies: Dependable<User>;
 
-    beforeAll(() => {
+    beforeAll((): void => {
         testUser = {
             username: '@JSGuy',
             password: 'password123',
@@ -36,7 +36,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(addedUser).toBeDefined();
                 expect(addedUser.id).toBeDefined();
                 expect(addedUser.username).toBe(testUser.username);
-                expect(addedUser.password).toBeDefined();
                 expect(addedUser.firstName).toBe(testUser.firstName);
                 expect(addedUser.lastName).toBe(testUser.lastName);
                 expect(addedUser.level).toBe(testUser.level);
@@ -48,7 +47,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(partialUser).toBeDefined();
                 expect(partialUser.id).toBeUndefined();
                 expect(partialUser.username).toBe(testUser.username);
-                expect(partialUser.password).toBeDefined();
                 expect(partialUser.firstName).toBe(testUser.firstName);
                 expect(partialUser.lastName).toBe(testUser.lastName);
                 expect(partialUser.level).toBeUndefined();
@@ -94,7 +92,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(updatedUser).toBeDefined();
                 expect(updatedUser?.id).toBe(addedUser.id);
                 expect(updatedUser?.username).toBe(addedUser.username);
-                expect(updatedUser?.password).toBeDefined();
                 expect(updatedUser?.firstName).toBe('George');
                 expect(updatedUser?.lastName).toBe(addedUser.lastName);
                 expect(updatedUser?.level).toBe(addedUser.level);
@@ -113,7 +110,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(updatedUser).toBeDefined();
                 expect(updatedUser?.id).toBeUndefined();
                 expect(updatedUser?.username).toBe(addedUser.username);
-                expect(updatedUser?.password).toBeDefined();
                 expect(updatedUser?.firstName).toBe('George');
                 expect(updatedUser?.lastName).toBe(addedUser.lastName);
                 expect(updatedUser?.level).toBeUndefined();
@@ -177,12 +173,11 @@ describe('User Use-Case Tests', (): void => {
         describe('Functionality Tests', (): void => {
             it('User should be returned when deleted', async (): Promise<void> => {
                 const addedUser = await UserUseCase.add(dependencies).execute(testUser);
-                const deletedUser = await UserUseCase.delete(dependencies).execute(addedUser);
+                const deletedUser = await UserUseCase.delete(dependencies).execute((addedUser.id as string));
 
                 expect(deletedUser).toBeDefined();
                 expect(deletedUser?.id).toBeDefined();
                 expect(deletedUser?.username).toBe(addedUser.username);
-                expect(deletedUser?.password).toBeDefined();
                 expect(deletedUser?.firstName).toBe(addedUser.firstName);
                 expect(deletedUser?.lastName).toBe(addedUser.lastName);
                 expect(deletedUser?.level).toBe(addedUser.level);
@@ -190,12 +185,11 @@ describe('User Use-Case Tests', (): void => {
 
             it('Partial user should be returned when deleted with protected option', async (): Promise<void> => {
                 const addedUser = await UserUseCase.add(dependencies).execute(testUser);
-                const deletedUser = await UserUseCase.delete(dependencies).execute(addedUser,{protected:true});
+                const deletedUser = await UserUseCase.delete(dependencies).execute((addedUser.id as string),{protected:true});
 
                 expect(deletedUser).toBeDefined();
                 expect(deletedUser?.id).toBeUndefined();
                 expect(deletedUser?.username).toBe(addedUser.username);
-                expect(deletedUser?.password).toBeDefined();
                 expect(deletedUser?.firstName).toBe(addedUser.firstName);
                 expect(deletedUser?.lastName).toBe(addedUser.lastName);
                 expect(deletedUser?.level).toBeUndefined();
@@ -204,35 +198,7 @@ describe('User Use-Case Tests', (): void => {
 
         describe('Validation Tests', (): void => {
             it('Promise should be rejected when user deleted without id', async (): Promise<void> => {
-                await expectAsync(UserUseCase.delete(dependencies).execute({
-                    username:testUser.username,
-                    password:testUser.password,
-                    level:testUser.level
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when user deleted without username', async (): Promise<void> => {
-                await expectAsync(UserUseCase.delete(dependencies).execute({
-                    id: uuid(),
-                    password:testUser.password,
-                    level:testUser.level
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when user deleted without password', async (): Promise<void> => {
-                await expectAsync(UserUseCase.delete(dependencies).execute({
-                    id: uuid(),
-                    username:testUser.username,
-                    level:testUser.level
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when user deleted without level', async (): Promise<void> => {
-                await expectAsync(UserUseCase.delete(dependencies).execute({
-                    id: uuid(),
-                    username:testUser.username,
-                    password:testUser.password,
-                })).toBeRejected();
+                await expectAsync(UserUseCase.delete(dependencies).execute(((null as unknown) as string))).toBeRejected();
             });
         });
     });
@@ -246,7 +212,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUser).toBeDefined();
                 expect(returnedUser?.id).toBe(addedUser.id);
                 expect(returnedUser?.username).toBe(testUser.username);
-                expect(returnedUser?.password).toBeDefined();
                 expect(returnedUser?.firstName).toBe(testUser.firstName);
                 expect(returnedUser?.lastName).toBe(testUser.lastName);
                 expect(returnedUser?.level).toBe(testUser.level);
@@ -259,7 +224,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUser).toBeDefined();
                 expect(returnedUser?.id).toBeUndefined();
                 expect(returnedUser?.username).toBe(testUser.username);
-                expect(returnedUser?.password).toBeDefined();
                 expect(returnedUser?.firstName).toBe(testUser.firstName);
                 expect(returnedUser?.lastName).toBe(testUser.lastName);
                 expect(returnedUser?.level).toBeUndefined();
@@ -282,7 +246,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUser).toBeDefined();
                 expect(returnedUser?.id).toBe(addedUser.id);
                 expect(returnedUser?.username).toBe(testUser.username);
-                expect(returnedUser?.password).toBeDefined();
                 expect(returnedUser?.firstName).toBe(testUser.firstName);
                 expect(returnedUser?.lastName).toBe(testUser.lastName);
                 expect(returnedUser?.level).toBe(testUser.level);
@@ -295,7 +258,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUser).toBeDefined();
                 expect(returnedUser?.id).toBeUndefined();
                 expect(returnedUser?.username).toBe(testUser.username);
-                expect(returnedUser?.password).toBeDefined();
                 expect(returnedUser?.firstName).toBe(testUser.firstName);
                 expect(returnedUser?.lastName).toBe(testUser.lastName);
                 expect(returnedUser?.level).toBeUndefined();
@@ -319,7 +281,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUsers.length).toBe(1);
                 expect(returnedUsers[0].id).toBe(addedUser.id);
                 expect(returnedUsers[0].username).toBe(addedUser.username);
-                expect(returnedUsers[0].password).toBeDefined();
                 expect(returnedUsers[0].firstName).toBe(addedUser.firstName);
                 expect(returnedUsers[0].lastName).toBe(addedUser.lastName);
                 expect(returnedUsers[0].level).toBe(addedUser.level);
@@ -333,7 +294,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUsers.length).toBe(1);
                 expect(returnedUsers[0].id).toBeUndefined();
                 expect(returnedUsers[0].username).toBe(addedUser.username);
-                expect(returnedUsers[0].password).toBeDefined();
                 expect(returnedUsers[0].firstName).toBe(addedUser.firstName);
                 expect(returnedUsers[0].lastName).toBe(addedUser.lastName);
                 expect(returnedUsers[0].level).toBeUndefined();
@@ -351,7 +311,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUsers.length).toBe(1);
                 expect(returnedUsers[0].id).toBe(addedUser.id);
                 expect(returnedUsers[0].username).toBe(addedUser.username);
-                expect(returnedUsers[0].password).toBeDefined();
                 expect(returnedUsers[0].firstName).toBe(addedUser.firstName);
                 expect(returnedUsers[0].lastName).toBe(addedUser.lastName);
                 expect(returnedUsers[0].level).toBe(addedUser.level);
@@ -365,7 +324,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(returnedUsers.length).toBe(1);
                 expect(returnedUsers[0].id).toBeUndefined();
                 expect(returnedUsers[0].username).toBe(addedUser.username);
-                expect(returnedUsers[0].password).toBeDefined();
                 expect(returnedUsers[0].firstName).toBe(addedUser.firstName);
                 expect(returnedUsers[0].lastName).toBe(addedUser.lastName);
                 expect(returnedUsers[0].level).toBeUndefined();
@@ -382,7 +340,6 @@ describe('User Use-Case Tests', (): void => {
                 expect(authenticatedUser).toBeDefined();
                 expect(authenticatedUser?.id).toBe(addedUser.id);
                 expect(authenticatedUser?.username).toBe(addedUser.username);
-                expect(authenticatedUser?.password).toBeDefined();
                 expect(authenticatedUser?.firstName).toBe(addedUser.firstName);
                 expect(authenticatedUser?.lastName).toBe(addedUser.lastName);
                 expect(authenticatedUser?.level).toBe(addedUser.level);

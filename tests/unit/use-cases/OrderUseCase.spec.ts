@@ -11,7 +11,7 @@ describe('Order Use-Case Tests', (): void => {
     let testProduct: Product;
     let dependencies: Dependable<Order>;
 
-    beforeAll(() => {
+    beforeAll((): void => {
         testOrder = {
             status: OrderStatus.Active
         };
@@ -154,7 +154,7 @@ describe('Order Use-Case Tests', (): void => {
             it('Order should be returned when deleted', async (): Promise<void> => {
                 const addedUser = await UserUseCase.add({repository:UsersRepository}).execute(testUser);
                 const addedOrder = await OrderUseCase.add(dependencies).execute({...testOrder, userId:addedUser.id});
-                const deletedOrder = await OrderUseCase.delete(dependencies).execute(addedOrder);
+                const deletedOrder = await OrderUseCase.delete(dependencies).execute((addedOrder.id as number));
 
                 expect(deletedOrder).toBeDefined();
                 expect(deletedOrder?.id).toBe(addedOrder.id);
@@ -165,7 +165,7 @@ describe('Order Use-Case Tests', (): void => {
             it('Partial order should be returned when deleted with protected option', async (): Promise<void> => {
                 const addedUser = await UserUseCase.add({repository:UsersRepository}).execute(testUser);
                 const addedOrder = await OrderUseCase.add(dependencies).execute({...testOrder, userId:addedUser.id});
-                const deletedOrder = await OrderUseCase.delete(dependencies).execute(addedOrder,{protected:true});
+                const deletedOrder = await OrderUseCase.delete(dependencies).execute((addedOrder.id as number),{protected:true});
 
                 expect(deletedOrder).toBeDefined();
                 expect(deletedOrder?.id).toBe(addedOrder.id);
@@ -176,35 +176,7 @@ describe('Order Use-Case Tests', (): void => {
 
         describe('Validation Tests', (): void => {
             it('Promise should be rejected when order deleted without id', async (): Promise<void> => {
-                await expectAsync(OrderUseCase.delete(dependencies).execute({
-                    id:((null as unknown) as number),
-                    status:OrderStatus.Inactive,
-                    userId:uuid()
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when order deleted without status', async (): Promise<void> => {
-                await expectAsync(OrderUseCase.delete(dependencies).execute({
-                    id:0,
-                    status:((null as unknown) as OrderStatus),
-                    userId:uuid()
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when order deleted without userId', async (): Promise<void> => {
-                await expectAsync(OrderUseCase.delete(dependencies).execute({
-                    id:0,
-                    status:OrderStatus.Inactive,
-                    userId:((null as unknown) as string)
-                })).toBeRejected();
-            });
-
-            it('Promise should be rejected when order deleted without userId as guid', async (): Promise<void> => {
-                await expectAsync(OrderUseCase.delete(dependencies).execute({
-                    id:0,
-                    status:OrderStatus.Inactive,
-                    userId:'fizz_buzz'
-                })).toBeRejected();
+                await expectAsync(OrderUseCase.delete(dependencies).execute(((null as unknown) as number))).toBeRejected();
             });
         });
     });
