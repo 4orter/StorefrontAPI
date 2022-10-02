@@ -48,8 +48,7 @@ const ProductsRepository: DataStorable<Product> = {
             throw new Error('Error while updating product');
         }
     },
-    async delete(product: Product, options?): Promise<Product | null> {
-        const {id} = product;
+    async delete(id: string | number, options?): Promise<Product | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(

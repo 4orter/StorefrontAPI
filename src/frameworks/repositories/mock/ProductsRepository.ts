@@ -36,17 +36,17 @@ const ProductsRepository: DataStorable<Product> = {
         }
         return product;
     },
-    async delete(product: Product, options?): Promise<Product | null> {
-        const index = MockDatabase.products.findIndex((item: Product) => item.id = product.id);
+    async delete(id: string | number, options?): Promise<Product | null> {
+        const index = MockDatabase.products.findIndex((item: Product) => item.id === id);
         if (index < 0) return null;
 
-        const _product = MockDatabase.products.splice(index, 1)[0];
+        const product = MockDatabase.products.splice(index, 1)[0];
 
         if (options?.protected) {
             return {
-                name:_product.name,
-                description:_product.description,
-                price:_product.price
+                name:product.name,
+                description:product.description,
+                price:product.price
             };
         }
         return product;

@@ -49,13 +49,12 @@ const OrdersRepository: DataStorable<Order> = {
             throw new Error('Error while updating order');
         }
     },
-    async delete(order: Order, options?): Promise<Order | null> {
-        const {id,userId} = order;
+    async delete(id: string | number, options?): Promise<Order | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                `DELETE FROM orders WHERE id = ($1) AND user_id = ($2) ${returningClause}`,
-                [id,userId]
+                `DELETE FROM orders WHERE id = ($1) ${returningClause}`,
+                [id]
             );
             conn.release();
 

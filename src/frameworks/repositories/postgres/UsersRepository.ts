@@ -4,15 +4,14 @@ import {User} from '../../../entities';
 import {DataStorable} from '../../../entities/protocols';
 import {PostgresDatabase} from '../../databases/postgres';
 import {UserSession} from '../../../entities/auxiliary';
-import {QueryResult} from 'pg';
 
 const selectClause = 'SELECT id, username, password_digest AS "password", first_name AS "firstName", last_name AS "lastName", level';
-const returningClause = 'RETURNING id, username, password_digest AS "password", first_name AS "firstName", last_name AS "lastName", level';
+const returningClause = 'RETURNING id, username, first_name AS "firstName", last_name AS "lastName", level';
 const sessionSelectClause = 'SELECT id, secret, user_id AS "userId"';
 const sessionReturningClause = 'RETURNING id, secret, user_id AS "userId"';
 const protectify = (user: User): User => {
-    user.password = (user.password as string).replace(/./g, '*');
     delete user.id;
+    delete user.password;
     delete user.level;
     return user;
 };
@@ -56,21 +55,27 @@ const UsersRepository: DataStorable<User> = {
             throw new Error('Error while updating user');
         }
     },
-    async delete(user: User, options?): Promise<User | null> {
-        const {id} = user;
+    async delete(id: string | number, options?): Promise<User | null> {
         try {
             const conn = await PostgresDatabase.connect();
             const result = await conn.query(
-                `DELETE FROM users WHERE id = ($1) ${returningClause}`,
+                `${selectClause} FROM users WHERE id = ($1)`,
                 [id]
             );
+
+            if (result.rows.length) {
+                const result = await conn.query(
+                    `DELETE FROM users WHERE id = ($1) ${returningClause}`,
+                    [id]
+                );
+
+                const user = result.rows[0] as User;
+                if (options?.protected) return protectify({...user});
+                return user;
+            }
+
             conn.release();
-
-            if (!result.rows.length) return null;
-
-            const _user = result.rows[0] as User;
-            if (options?.protected) return protectify({..._user});
-            return _user;
+            return null;
         } catch (error) {
             throw new Error('Error while deleting user');
         }
@@ -88,6 +93,7 @@ const UsersRepository: DataStorable<User> = {
 
             const user = result.rows[0] as User;
             if (options?.protected) return protectify({...user});
+            delete user.password;
             return user;
         } catch (error) {
             throw new Error('Error while getting user by id');
@@ -106,6 +112,7 @@ const UsersRepository: DataStorable<User> = {
 
             const user = result.rows[0] as User;
             if (options?.protected) return protectify({...user});
+            delete user.password;
             return user;
         } catch (error) {
             throw new Error('Error getting user by username');
@@ -119,7 +126,11 @@ const UsersRepository: DataStorable<User> = {
             if (options?.protected) {
                 return result.rows.map((user: User) => protectify({...user}));
             }
-            return result.rows;
+
+            return result.rows.map((user: User) => {
+                delete user.password;
+                return user;
+            });
         } catch (error) {
             throw new Error('Error while getting all users');
         }
@@ -132,7 +143,11 @@ const UsersRepository: DataStorable<User> = {
             if (options?.protected) {
                 return result.rows.map((user: User) => protectify({...user}));
             }
-            return result.rows;
+
+            return result.rows.map((user: User) => {
+                delete user.password;
+                return user;
+            });
         } catch (error) {
             throw new Error('Error while deleting all users');
         }
@@ -149,6 +164,7 @@ const UsersRepository: DataStorable<User> = {
             if (result.rows.length) {
                 const user = result.rows[0] as User;
                 if (bcrypt.compareSync(password + vars.bcryptSecret, (user.password as string))) {
+                    delete user.password;
                     return user;
                 }
                 return null;

@@ -38,8 +38,8 @@ const UsersRepository: DataStorable<User> = {
         }
         return user;
     },
-    async delete(user: User, options?): Promise<User | null> {
-        const index = MockDatabase.users.findIndex((item: User) => item.id === user.id);
+    async delete(id: string | number, options?): Promise<User | null> {
+        const index = MockDatabase.users.findIndex((item: User) => item.id === id);
         if (index < 0) return null;
 
         const _user = MockDatabase.users.splice(index, 1)[0];

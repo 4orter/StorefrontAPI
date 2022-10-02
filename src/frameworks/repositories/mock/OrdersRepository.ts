@@ -34,8 +34,8 @@ const OrdersRepository: DataStorable<Order> = {
         }
         return order;
     },
-    async delete(order: Order, options?): Promise<Order | null> {
-        const index = MockDatabase.orders.findIndex((item: Order) => item.id = order.id);
+    async delete(id: string | number, options?): Promise<Order | null> {
+        const index = MockDatabase.orders.findIndex((item: Order) => item.id === id);
         if (index < 0) return null;
 
         const _order = MockDatabase.orders.splice(index, 1)[0];
