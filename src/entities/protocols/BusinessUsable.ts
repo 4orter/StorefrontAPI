@@ -5,7 +5,7 @@ import Dependable from './Dependable';
 interface BusinessUsable<T> {
     add(dependencies: Dependable<T>): {execute: (item: T, options?:{protected:boolean}) => Promise<T>};
     update(dependencies: Dependable<T>): {execute: (item: T, options?:{protected:boolean}) => Promise<T | null>};
-    delete(dependencies: Dependable<T>): {execute: (item: T, options?:{protected:boolean}) => Promise<T | null>};
+    delete(dependencies: Dependable<T>): {execute: (id: string | number, options?:{protected:boolean}) => Promise<T | null>};
     getById(dependencies: Dependable<T>): {execute: (id: string | number, options?:{protected:boolean}) => Promise<T | null>};
     getAll(dependencies: Dependable<T>): {execute: (options?:{protected:boolean}) => Promise<T[]>};
     deleteAll(dependencies: Dependable<T>): {execute: (options?:{protected:boolean}) => Promise<T[]>};

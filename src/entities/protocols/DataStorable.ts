@@ -4,7 +4,7 @@ import {OrderProduct, ProductCategory, UserSession} from '../auxiliary';
 interface DataStorable<T> {
     add(item: T, options?:{protected:boolean}): Promise<T>;
     update(item: T, options?:{protected:boolean}): Promise<T | null>;
-    delete(item: T, options?:{protected:boolean}): Promise<T | null>;
+    delete(id: string | number, options?:{protected:boolean}): Promise<T | null>;
     getById(id: string | number, options?:{protected:boolean}): Promise<T | null>;
     getAll(options?:{protected:boolean}): Promise<T[]>;
     deleteAll(options?:{protected:boolean}): Promise<T[]>;
