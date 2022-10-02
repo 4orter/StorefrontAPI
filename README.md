@@ -109,8 +109,8 @@ You may use the following endpoints and provide required / optional payload valu
 To run the project:
 1. Download the source code from this repository
 2. Open your terminal and `cd` into the project folder
-3. Install the dependencies by running  `npm install` 
-4. Create a `.env` file in the project's root folder using the following template:
+3. Install the dependencies by running  `npm install`
+4. Create a `.env` file at the project's root and use the following template:
    ```YAML
    # Server
    PORT=3000
