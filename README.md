@@ -14,6 +14,7 @@ The API can be accessed from the `api/v1` endpoint; this should be used for auth
 <br>
 
 ## Example Request
+The following request creates a new user:
 
 Method: `POST`
 
