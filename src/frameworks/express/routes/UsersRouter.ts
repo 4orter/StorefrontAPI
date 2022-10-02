@@ -8,13 +8,13 @@ const UsersRouter = (dependencies: Dependable<User>): express.Router => {
     const controller = UserController(dependencies);
 
     router.route('/')
-          .get(controller.getAllUsers)
-          .post(controller.addUser)
-          .put(controller.updateUser)
-          .delete(controller.deleteUser);
+        .get(controller.getAllUsers)
+        .post(controller.addUser)
+        .put(controller.updateUser);
 
-
-    router.route('/:id').get(controller.getUserById);
+    router.route('/:id')
+        .get(controller.getUserById)
+        .delete(controller.deleteUser);
 
     return router;
 };

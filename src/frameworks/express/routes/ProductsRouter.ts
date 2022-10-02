@@ -8,13 +8,13 @@ const ProductsRouter = (dependencies: Dependable<Product>): express.Router => {
     const controller = ProductController(dependencies);
 
     router.route('/')
-          .get(controller.getAllProducts)
-          .post(controller.addProduct)
-          .put(controller.updateProduct)
-          .delete(controller.deleteProduct);
+        .get(controller.getAllProducts)
+        .post(controller.addProduct)
+        .put(controller.updateProduct);
 
-
-    router.route('/:id').get(controller.getProductById);
+    router.route('/:id')
+        .get(controller.getProductById)
+        .delete(controller.deleteProduct);
 
     return router;
 };

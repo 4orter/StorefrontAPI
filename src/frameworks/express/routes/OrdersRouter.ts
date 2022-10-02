@@ -8,13 +8,13 @@ const OrdersRouter = (dependencies: Dependable<Order>): express.Router => {
     const controller = OrderController(dependencies);
 
     router.route('/')
-          .get(controller.getAllOrders)
-          .post(controller.addOrder)
-          .put(controller.updateOrder)
-          .delete(controller.deleteOrder);
+        .get(controller.getAllOrders)
+        .post(controller.addOrder)
+        .put(controller.updateOrder);
 
-
-    router.route('/:id').get(controller.getOrderById);
+    router.route('/:id')
+        .get(controller.getOrderById)
+        .delete(controller.deleteOrder);
 
     return router;
 };
