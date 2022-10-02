@@ -12,7 +12,7 @@ const vars: Variables = {
     accessSecret: process.env.ACCESS_SECRET as string,
     refreshSecret: process.env.REFRESH_SECRET as string,
     postgresHost: process.env.POSTGRES_HOST || '127.0.0.1',
-    postgresProductionDatabase: process.env.POSTGRES_DB_DEV || 'storefront_dev',
+    postgresProductionDatabase: process.env.POSTGRES_DB_PROD || 'storefront_prod',
     postgresDevelopmentDatabase: process.env.POSTGRES_DB_TEST || 'storefront_test',
     postgresUser: process.env.POSTGRES_USER || 'test_user',
     postgresPassword: process.env.POSTGRES_PASSWORD || 'password123'

@@ -1,8 +1,8 @@
 {
-    "dev": {
+    "prod": {
         "driver": "pg",
         "host": {"ENV": "POSTGRES_HOST"},
-        "database": {"ENV": "POSTGRES_DB_DEV"},
+        "database": {"ENV": "POSTGRES_DB_PROD"},
         "user": {"ENV": "POSTGRES_USER"},
         "password": {"ENV": "POSTGRES_PASSWORD"}
     },
