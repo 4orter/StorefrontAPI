@@ -1,5 +1,5 @@
 # StorefrontAPI
-> **NOTE**: Before running this application, you need to have PostgreSQL installed
+> **NOTE**: You need to have PostgreSQL installed to run this application
 
 <br>
 
@@ -13,8 +13,26 @@ The API can be accessed from the `api/v1` endpoint; this should be used for auth
 
 <br>
 
+## Example Request
+
+Method: `POST`
+
+URL: `http://localhost:3000/api/v1/users`
+
+Payload:
+```json
+{
+    "username": "testUser",
+    "password": "password123",
+    "firstName": "Testing",
+    "lastName": "Account"
+}
+```
+
+<br>
+
 ## Available Endpoints
-You may use the following endpoints and provide required / optional payload values for various tasks as needed:
+You may use the following endpoints and provide required / optional payload values for various tasks:
 
 ### Authentication Endpoints
 - Sign Up
@@ -87,30 +105,12 @@ You may use the following endpoints and provide required / optional payload valu
 
 <br>
 
-## Example Request
-
-Method: `POST`
-
-URL: `http://localhost:3000/api/v1/users`
-
-Payload:
-```json
-{
-    "username": "testUser",
-    "password": "password123",
-    "firstName": "Testing",
-    "lastName": "Account"
-}
-```
-
-<br>
-
 ## Running the Project
 To run the project:
 1. Download the source code from this repository
 2. Open your terminal and `cd` into the project folder
-3. Install the dependencies by using  `npm install` or `npm i`
-4. Setup `.env` file like the following:
+3. Install the dependencies by running  `npm install` 
+4. Create a `.env` file in the project's root folder using the following template:
    ```YAML
    # Server
    PORT=3000
