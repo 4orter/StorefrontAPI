@@ -91,7 +91,7 @@ describe('Postgres Product Repository Tests', (): void => {
     describe('delete() Tests', (): void => {
         it('Deleting product should delete and return product', async (): Promise<void> => {
             const addedProduct = await ProductsRepository.add(testProduct);
-            const deletedProduct = await ProductsRepository.delete(addedProduct) as Product;
+            const deletedProduct = await ProductsRepository.delete((addedProduct.id as string)) as Product;
 
             expect(deletedProduct).toBeDefined();
             expect(deletedProduct.id).toBe(addedProduct.id);
@@ -102,7 +102,7 @@ describe('Postgres Product Repository Tests', (): void => {
 
         it('Deleting product with protected options should return partial product', async (): Promise<void> => {
             const addedProduct = await ProductsRepository.add(testProduct);
-            const deletedProduct = await ProductsRepository.delete(addedProduct, {protected:true}) as Product;
+            const deletedProduct = await ProductsRepository.delete((addedProduct.id as string),{protected:true}) as Product;
 
             expect(deletedProduct).toBeDefined();
             expect(deletedProduct.id).toBeUndefined();
@@ -112,7 +112,7 @@ describe('Postgres Product Repository Tests', (): void => {
         });
 
         it('Deleting product with invalid id should return null', async (): Promise<void> => {
-            const deletedProduct = await ProductsRepository.delete(testProduct);
+            const deletedProduct = await ProductsRepository.delete(uuid());
             expect(deletedProduct).toBeNull();
         });
     });

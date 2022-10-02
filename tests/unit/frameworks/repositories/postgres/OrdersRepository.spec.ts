@@ -107,7 +107,7 @@ describe('Postgres Order Repository Tests', (): void => {
         it('Deleting order should delete and return order', async (): Promise<void> => {
             const addedUser = await UsersRepository.add(testUser);
             const addedOrder = await OrdersRepository.add({...testOrder, userId:addedUser.id});
-            const deletedOrder = await OrdersRepository.delete(addedOrder);
+            const deletedOrder = await OrdersRepository.delete((addedOrder.id as number));
 
             expect(deletedOrder).toBeDefined();
             expect(deletedOrder?.id).toBe(addedOrder.id);
@@ -118,7 +118,7 @@ describe('Postgres Order Repository Tests', (): void => {
         it('Deleting order with protected option should return partial order', async (): Promise<void> => {
             const addedUser = await UsersRepository.add(testUser);
             const addedOrder = await OrdersRepository.add({...testOrder, userId:addedUser.id});
-            const deletedOrder = await OrdersRepository.delete(addedOrder,{protected:true});
+            const deletedOrder = await OrdersRepository.delete((addedOrder.id as number),{protected:true});
 
             expect(deletedOrder).toBeDefined();
             expect(deletedOrder?.id).toBe(addedOrder.id);
@@ -128,12 +128,8 @@ describe('Postgres Order Repository Tests', (): void => {
 
         it('Deleting order with invalid id should return null', async (): Promise<void> => {
             const addedUser = await UsersRepository.add(testUser);
-            const addedOrder = await OrdersRepository.add({...testOrder, userId:addedUser.id});
-            const deletedOrder = await OrdersRepository.delete({
-                ...addedOrder,
-                id: -1,
-                status:OrderStatus.Inactive
-            });
+            await OrdersRepository.add({...testOrder, userId:addedUser.id});
+            const deletedOrder = await OrdersRepository.delete(-1);
 
             expect(deletedOrder).toBeNull();
         });
