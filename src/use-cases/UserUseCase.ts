@@ -15,7 +15,6 @@ const UserUseCase: BusinessUsable<User> = {
 
         const getValidationErrors = (user: User): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.string().guid({version:'uuidv4'}).optional(),
                 username: Joi.string().required(),
                 password: Joi.string().required(),
                 firstName: Joi.string().optional(),
@@ -83,24 +82,19 @@ const UserUseCase: BusinessUsable<User> = {
 
         return {execute};
     },
-    delete(dependencies: Dependable<User>): {execute: (user: User, options?:{protected:boolean}) => Promise<User | null>} {
+    delete(dependencies: Dependable<User>): {execute: (id: string | number, options?:{protected:boolean}) => Promise<User | null>} {
         const {
             repository
         } = dependencies;
 
         if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (user: User): ValidationError | null => {
+        const getValidationErrors = (id: string | number): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.string().guid({version:'uuidv4'}).required(),
-                username: Joi.string().required(),
-                password: Joi.string().required(),
-                firstName: Joi.string().optional(),
-                lastName: Joi.string().optional(),
-                level: Joi.number().min(0).max(1).required()
+                id: Joi.string().guid({version:'uuidv4'}).required()
             });
 
-            const result = schema.validate(user);
+            const result = schema.validate({id});
 
             if (result.error) return {
                 field: result.error.details[0].context?.label,
@@ -109,12 +103,12 @@ const UserUseCase: BusinessUsable<User> = {
             return null;
         };
 
-        const execute = async (user: User, options?: {protected:boolean}): Promise<User | null> => {
-            const validationError = getValidationErrors(user);
+        const execute = async (id: string | number, options?: {protected:boolean}): Promise<User | null> => {
+            const validationError = getValidationErrors(id);
             if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.delete(user,options);
+                return await repository.delete(id,options);
             } catch (error) {
                 return Promise.reject(generateRejection((error as Error).message || 'Error deleting user'));
             }

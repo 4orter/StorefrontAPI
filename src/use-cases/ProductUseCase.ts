@@ -15,7 +15,6 @@ const ProductUseCase: BusinessUsable<Product> = {
 
         const getValidationErrors = (product: Product): ValidationError | null=> {
             const schema = Joi.object({
-                id: Joi.string().guid({version:'uuidv4'}).optional(),
                 name: Joi.string().required(),
                 description: Joi.string(),
                 price: Joi.number().required(),
@@ -82,23 +81,19 @@ const ProductUseCase: BusinessUsable<Product> = {
 
         return {execute};
     },
-    delete(dependencies: Dependable<Product>): {execute: (product: Product, options?:{protected:boolean}) => Promise<Product | null>} {
+    delete(dependencies: Dependable<Product>): {execute: (id: string | number, options?:{protected:boolean}) => Promise<Product | null>} {
         const {
             repository
         } = dependencies;
 
         if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (product: Product): ValidationError | null => {
+        const getValidationErrors = (id: string | number): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.string().guid({version:'uuidv4'}).required(),
-                name: Joi.string().required(),
-                description: Joi.string().optional(),
-                price: Joi.number().required(),
-                categoryId: Joi.any().optional()
+                id: Joi.string().guid({version:'uuidv4'}).required()
             });
 
-            const result = schema.validate(product);
+            const result = schema.validate({id});
 
             if (result.error) return {
                 field: result.error.details[0].context?.label,
@@ -107,12 +102,12 @@ const ProductUseCase: BusinessUsable<Product> = {
             return null;
         };
 
-        const execute = async (product: Product, options?: {protected:boolean}): Promise<Product | null> => {
-            const validationError = getValidationErrors(product);
+        const execute = async (id: string | number, options?: {protected:boolean}): Promise<Product | null> => {
+            const validationError = getValidationErrors(id);
             if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.delete(product,options);
+                return await repository.delete(id,options);
             } catch (error) {
                 return Promise.reject(generateRejection((error as Error).message || 'Error deleting product'));
             }

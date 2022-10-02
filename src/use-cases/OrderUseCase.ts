@@ -15,7 +15,6 @@ const OrderUseCase: BusinessUsable<Order> = {
 
         const getValidationErrors = (order: Order): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.number().optional(),
                 status: Joi.string().alphanum().length(1).required(),
                 userId: Joi.string().guid({version:'uuidv4'}).required()
             });
@@ -78,21 +77,19 @@ const OrderUseCase: BusinessUsable<Order> = {
 
         return {execute};
     },
-    delete(dependencies: Dependable<Order>): {execute: (order: Order, options?:{protected:boolean}) => Promise<Order | null>} {
+    delete(dependencies: Dependable<Order>): {execute: (id: string | number, options?:{protected:boolean}) => Promise<Order | null>} {
         const {
             repository
         } = dependencies;
 
         if (!repository) throw new Error('repository should be passed as a dependency');
 
-        const getValidationErrors = (order: Order): ValidationError | null => {
+        const getValidationErrors = (id: string | number): ValidationError | null => {
             const schema = Joi.object({
-                id: Joi.number().required(),
-                status: Joi.string().alphanum().length(1).required(),
-                userId: Joi.string().guid({version:'uuidv4'}).required()
+                id: Joi.number().required()
             });
 
-            const result = schema.validate(order);
+            const result = schema.validate({id});
 
             if (result.error) return {
                 field: result.error.details[0].context?.label,
@@ -101,12 +98,12 @@ const OrderUseCase: BusinessUsable<Order> = {
             return null;
         };
 
-        const execute = async (order: Order, options?:{protected:boolean}): Promise<Order | null> => {
-            const validationError = getValidationErrors(order);
+        const execute = async (id: string | number, options?:{protected:boolean}): Promise<Order | null> => {
+            const validationError = getValidationErrors(id);
             if (validationError) return Promise.reject(generateValidationError(validationError));
 
             try {
-                return await repository.delete(order,options);
+                return await repository.delete(id,options);
             } catch (error) {
                 return Promise.reject(generateRejection((error as Error).message || 'Error deleting order'));
             }
