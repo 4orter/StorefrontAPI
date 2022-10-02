@@ -1,6 +1,5 @@
 import supertest from 'supertest';
 import app from '../../../../../src';
-import {v4 as uuid} from 'uuid';
 import {Product} from '../../../../../src/entities';
 import {ProductsRepository, UsersRepository} from '../../../../../src/frameworks/repositories/postgres';
 
@@ -8,13 +7,11 @@ const request = supertest(app);
 const API_PREFIX = '/api/v1';
 
 describe('Products Router Tests', () => {
-    let fakeProductId: string;
+    let productId: string;
     let A_TOKEN: string;
     let R_TOKEN: string;
 
     beforeAll(async (): Promise<void> => {
-        fakeProductId = uuid();
-
         await UsersRepository.add({
             username: 'admin',
             password: 'password123',
@@ -37,11 +34,13 @@ describe('Products Router Tests', () => {
             price: 5.99
         });
 
-        await ProductsRepository.add({
+        const product = await ProductsRepository.add({
             name: 'Aluminum Foil',
             description: 'Use it to cook anything!',
             price: 2.73
         });
+
+        productId = product.id as string;
     });
 
     afterAll(async (): Promise<void> => {
@@ -58,7 +57,7 @@ describe('Products Router Tests', () => {
         });
 
         it('Response status 404 should be returned when getting product without being authenticated', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/products/${fakeProductId}`);
+            const response = await request.get(`${API_PREFIX}/products/${productId}`);
             expect(response.status).toEqual(404);
         });
 
@@ -103,17 +102,14 @@ describe('Products Router Tests', () => {
         });
 
         it('Response with product object should be returned when getting product', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/products`).set('Cookie', [A_TOKEN, R_TOKEN]);
-            const productId = response.body.message[0].id;
-            const productResponse = await request.get(`${API_PREFIX}/products/${productId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
+            const response = await request.get(`${API_PREFIX}/products/${productId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
 
-            expect(productResponse.status).toBe(200);
-            expect(productResponse.body.status).toBe(200);
-            expect(productResponse.body.message).toBeDefined();
-            expect(productResponse.body.message.id).toBeDefined();
-            expect(productResponse.body.message.name).toBeDefined();
-            expect(productResponse.body.message.description).toBeDefined();
-            expect(productResponse.body.message.price).toBeDefined();
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe(200);
+            expect(response.body.message.id).toBeDefined();
+            expect(response.body.message.name).toBeDefined();
+            expect(response.body.message.description).toBeDefined();
+            expect(response.body.message.price).toBeDefined();
         });
 
         it('Response with product object should be returned when creating product', async (): Promise<void> => {
@@ -135,8 +131,8 @@ describe('Products Router Tests', () => {
         });
 
         it('Response with product object should be returned when updating product', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/products`).set('Cookie', [A_TOKEN, R_TOKEN]);
-            const product = response.body.message[0] as Product;
+            const response = await request.get(`${API_PREFIX}/products/${productId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
+            const product = response.body.message as Product;
             const productResponse = await request.put(`${API_PREFIX}/products`)
                 .set('Cookie', [A_TOKEN, R_TOKEN])
                 .type('json')
@@ -154,19 +150,14 @@ describe('Products Router Tests', () => {
         });
 
         it('Response with product object should be returned when deleting product', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/products`).set('Cookie', [A_TOKEN, R_TOKEN]);
-            const product = response.body.message[0] as Product;
-            const productResponse = await request.delete(`${API_PREFIX}/products`)
-                .set('Cookie', [A_TOKEN, R_TOKEN])
-                .type('json')
-                .send(product);
+            const response = await request.delete(`${API_PREFIX}/products/${productId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
 
-            expect(productResponse.status).toBe(200);
-            expect(productResponse.body.status).toBe(200);
-            expect(productResponse.body.message.id).toBeDefined();
-            expect(productResponse.body.message.name).toBeDefined();
-            expect(productResponse.body.message.description).toBeDefined();
-            expect(productResponse.body.message.price).toBeDefined();
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe(200);
+            expect(response.body.message.id).toBeDefined();
+            expect(response.body.message.name).toBeDefined();
+            expect(response.body.message.description).toBeDefined();
+            expect(response.body.message.price).toBeDefined();
         });
     });
 
@@ -192,7 +183,7 @@ describe('Products Router Tests', () => {
         });
 
         it('Response status 404 should be returned when getting product as customer', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/products/${fakeProductId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
+            const response = await request.get(`${API_PREFIX}/products/${productId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
             expect(response.status).toBe(404);
         });
 

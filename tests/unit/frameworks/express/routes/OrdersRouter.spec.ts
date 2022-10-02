@@ -8,8 +8,8 @@ const request = supertest(app);
 const API_PREFIX = '/api/v1';
 
 describe('Orders Router Tests', (): void => {
-    const fakeOrderId = 0;
     let customerId: string;
+    let orderId: number;
     let A_TOKEN: string;
     let R_TOKEN: string;
 
@@ -37,14 +37,18 @@ describe('Orders Router Tests', (): void => {
             userId: customerId
         });
 
-        await OrdersRepository.add({
+        const order = await OrdersRepository.add({
             status: OrderStatus.Active,
             userId: customerId
         });
+
+        orderId = order.id as number;
     });
 
     afterAll(async (): Promise<void> => {
         await OrdersRepository.deleteAll();
+        await UsersRepository.deleteAllSessions?.();
+        await UsersRepository.deleteAll();
     });
 
     describe('Unauthenticated User Tests', (): void => {
@@ -54,7 +58,7 @@ describe('Orders Router Tests', (): void => {
         });
 
         it('Response status 404 should be returned when getting order without being authenticated', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/orders/${fakeOrderId}`);
+            const response = await request.get(`${API_PREFIX}/orders/${orderId}`);
             expect(response.status).toEqual(404);
         });
 
@@ -90,7 +94,7 @@ describe('Orders Router Tests', (): void => {
             }
         });
 
-        it('Response with array of orders should be returned when getting products', async (): Promise<void> => {
+        it('Response with array of orders should be returned when getting orders', async (): Promise<void> => {
             const response = await request.get(`${API_PREFIX}/orders`).set('Cookie', [A_TOKEN, R_TOKEN]);
 
             expect(response.status).toBe(200);
@@ -99,15 +103,13 @@ describe('Orders Router Tests', (): void => {
         });
 
         it('Response with order object should be returned when getting order', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/orders`).set('Cookie', [A_TOKEN, R_TOKEN]);
-            const orderId = response.body.message[0].id;
-            const orderResponse = await request.get(`${API_PREFIX}/orders/${orderId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
+            const response = await request.get(`${API_PREFIX}/orders/${orderId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
 
-            expect(orderResponse.status).toBe(200);
-            expect(orderResponse.body.status).toBe(200);
-            expect(orderResponse.body.message.id).toBeDefined();
-            expect(orderResponse.body.message.status).toBeDefined();
-            expect(orderResponse.body.message.userId).toBeDefined();
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe(200);
+            expect(response.body.message.id).toBeDefined();
+            expect(response.body.message.status).toBeDefined();
+            expect(response.body.message.userId).toBeDefined();
         });
 
         it('Response with order object should be returned when creating order', async (): Promise<void> => {
@@ -127,8 +129,8 @@ describe('Orders Router Tests', (): void => {
         });
 
         it('Response with order object should be returned when updating order', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/orders`).set('Cookie', [A_TOKEN, R_TOKEN]);
-            const order = response.body.message[0] as Order;
+            const response = await request.get(`${API_PREFIX}/orders/${orderId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
+            const order = response.body.message as Order;
             const orderResponse = await request.put(`${API_PREFIX}/orders`)
                 .set('Cookie', [A_TOKEN, R_TOKEN])
                 .type('json')
@@ -145,18 +147,13 @@ describe('Orders Router Tests', (): void => {
         });
 
         it('Response with order object should be returned when deleting order', async (): Promise<void> => {
-            const response = await request.get(`${API_PREFIX}/orders`).set('Cookie', [A_TOKEN, R_TOKEN]);
-            const order = response.body.message[0] as Order;
-            const orderResponse = await request.delete(`${API_PREFIX}/orders`)
-                .set('Cookie', [A_TOKEN, R_TOKEN])
-                .type('json')
-                .send(order);
+            const response = await request.delete(`${API_PREFIX}/orders/${orderId}`).set('Cookie', [A_TOKEN, R_TOKEN]);
 
-            expect(orderResponse.status).toBe(200);
-            expect(orderResponse.body.status).toBe(200);
-            expect(orderResponse.body.message.id).toBeDefined();
-            expect(orderResponse.body.message.status).toBeDefined();
-            expect(orderResponse.body.message.userId).toBeDefined();
-        }); 
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe(200);
+            expect(response.body.message.id).toBeDefined();
+            expect(response.body.message.status).toBeDefined();
+            expect(response.body.message.userId).toBeDefined();
+        });
     });
 });
